@@ -8,8 +8,7 @@ export const navItems = [
 export const gridItems = [
   {
     id: 1,
-    title:
-      "We prioritize client feedback, to create solutions clients ACTUALLY use.",
+    title: "We  create solutions clients ACTUALLY use.",
     description: "",
     className: "lg:col-span-3 md:col-span-6 md:row-span-4 lg:min-h-[60vh]",
     imgClassName: "w-full h-full",
@@ -38,8 +37,8 @@ export const gridItems = [
     spareImg: "",
   },
   {
-    id: 4,
-    title: "Tech lovers, who love experimenting.",
+    id: 6,
+    title: "Do you want to work with us?",
     description: "",
     className: "lg:col-span-2 md:col-span-3 md:row-span-1",
     imgClassName: "",
@@ -50,17 +49,17 @@ export const gridItems = [
 
   {
     id: 5,
-    title: "Building AI Agents ith latest tech",
-    description: "What are we up to",
-    className: "md:col-span-3 md:row-span-2",
+    title: "Building an AI Agents with latest tech",
+    description: "Latest 📢",
+    className: "md:col-span-3 md:row-span-2 ",
     imgClassName: "absolute right-0 bottom-0 md:w-96 w-60",
     titleClassName: "justify-center md:justify-start lg:justify-center",
     img: "/b5.svg",
     spareImg: "/grid.svg",
   },
   {
-    id: 6,
-    title: "Do you want to work with us?",
+    id: 4,
+    title: "Tech lovers, who love experimenting.",
     description: "",
     className: "lg:col-span-2 md:col-span-3 md:row-span-1",
     imgClassName: "",
@@ -73,15 +72,15 @@ export const gridItems = [
 export const projects = [
   {
     id: 1,
-    title: "StackOverflow Clone",
-    des: "A modern stackoverflow clone with a sleek design and a touch of AI.",
-    img: "/p1.svg",
-    iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/three.svg", "/fm.svg"],
-    link: "https://jsm-devflow-gamma.vercel.app/",
+    title: "FiscalLens",
+    des: "A REAL Software-as-a-Service app with AI features that allows users to process and verify tax documents.",
+    img: "/fiscalens2.png",
+    iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/three.svg", "/c.svg"],
+    link: "https://docs-v2-murex.vercel.app/",
   },
   {
     id: 2,
-    title: "VTA 6 ",
+    title: "VTA",
     des: "Expressive design piece that is brought to live using the latest GSAP technologies.",
     img: "/p2.svg",
     iconLists: ["/next.svg", "/tail.svg", "/ts.svg", "/stream.svg", "/c.svg"],
@@ -89,17 +88,18 @@ export const projects = [
   },
   {
     id: 3,
-    title: "FiscalLens",
-    des: "A REAL Software-as-a-Service app with AI features that allows users to process and verify tax documents.",
-    img: "/p3.svg",
-    iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/three.svg", "/c.svg"],
-    link: "https://docs-v2-murex.vercel.app/",
+    title: "Devflow",
+    des: "A modern stackoverflow clone with a sleek design and a touch of AI.",
+    img: "/devflow2.png",
+    iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/three.svg", "/fm.svg"],
+    link: "https://jsm-devflow-gamma.vercel.app/",
   },
+
   {
     id: 4,
-    title: "Agent X",
+    title: "AgentX",
     des: "Your own personal assistant that uses tools to read YT videos, access database, WIkipedia and many more and share incredible insights..",
-    img: "/p4.svg",
+    img: "/agentx2.png",
     iconLists: ["/next.svg", "/tail.svg", "/ts.svg", "/three.svg", "/gsap.svg"],
     link: "https://yt-ai-agent-neon.vercel.app/",
   },

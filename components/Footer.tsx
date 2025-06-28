@@ -22,8 +22,8 @@ const Footer = () => {
           digital presence to the next level?
         </h1>
         <p className="text-white-200 md:mt-10 my-5 text-center">
-          Reach outtoday and let&apos;s discuss how we can help you achieve your
-          goals.
+          Reach out today and let&apos;s discuss how we can help you achieve
+          your goals.
         </p>
         <a href="mailto:tmuranda1@gmail.com">
           <MagicButton

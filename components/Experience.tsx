@@ -4,6 +4,13 @@ import { workExperience } from "@/data";
 import { Button } from "./ui/MovingBorders";
 
 const Experience = () => {
+  // Generate random gradient colors
+  const randomColorStop = () =>
+    `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(
+      Math.random() * 256
+    )}, ${Math.floor(Math.random() * 256)})`;
+
+  const gradient = `linear-gradient(90deg, ${randomColorStop()} 0%, ${randomColorStop()} 100%)`;
   return (
     <div className="py-20 w-full">
       <h1 className="heading">
