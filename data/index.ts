@@ -82,9 +82,9 @@ export const projects = [
     id: 2,
     title: "Mojito",
     des: "Expressive design piece that is brought to live using the latest GSAP technologies.",
-    img: "/p2.svg",
+    img: "/moji.png",
     iconLists: ["/next.svg", "/tail.svg", "/ts.svg", "/stream.svg", "/c.svg"],
-    link: "/https://gsap-cocktails-main.vercel.app/",
+    link: "https://gsap-cocktails-main.vercel.app/",
   },
   {
     id: 3,
