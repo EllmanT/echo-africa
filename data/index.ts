@@ -80,11 +80,11 @@ export const projects = [
   },
   {
     id: 2,
-    title: "VTA",
+    title: "Mojito",
     des: "Expressive design piece that is brought to live using the latest GSAP technologies.",
     img: "/p2.svg",
     iconLists: ["/next.svg", "/tail.svg", "/ts.svg", "/stream.svg", "/c.svg"],
-    link: "/ui.yoom.com",
+    link: "/https://gsap-cocktails-main.vercel.app/",
   },
   {
     id: 3,
