@@ -91,12 +91,13 @@ const Hero = () => {
            *  change md:text-6xl, add more responsive code
            */}
           <TextGenerateEffect
-            words="Transforming Your Ideas to Reality"
+            words="AI for African Businesses"
             className="text-center text-[40px] md:text-5xl lg:text-6xl"
           />
 
           <p className="text-center md:tracking-wider mb-2 text-sm md:text-lg lg:text-2xl">
-            Creating exprinces that last a lifetime.
+            AI-powered tools to streamline business operations and solve real
+            challenges across Africa.
           </p>
           <div className="flex gap-2">
             <a href="#about">
