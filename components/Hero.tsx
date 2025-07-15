@@ -49,7 +49,7 @@ const Hero = () => {
       <div className="flex justify-center relative my-12 z-10">
         <div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw] flex flex-col items-center justify-center">
           <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-80 font-mono flex items-baseline justify-center space-x-2">
-            <span>Echo Africa</span>
+            <span>Eka</span>
             <span className="relative flex flex-row space-x-1">
               <span
                 className="animate-pulse inline-block text-blue-300 rotate-[-10deg]"
