@@ -1,10 +1,5 @@
-import {
-  FaArrowsDownToLine,
-  FaCircleInfo,
-  FaLocationArrow,
-  FaQuestion,
-  FaWaveSquare,
-} from "react-icons/fa6";
+import Image from "next/image";
+import { FaCircleInfo, FaLocationArrow } from "react-icons/fa6";
 
 import MagicButton from "./MagicButton";
 import { Spotlight } from "./ui/Spotlight";
@@ -12,7 +7,7 @@ import { TextGenerateEffect } from "./ui/TextGenerateEffect";
 
 const Hero = () => {
   return (
-    <div className="pb-10 pt-32">
+    <div className="pb-5 pt-16">
       {/**
        *  UI: Spotlights
        *  Link: https://ui.aceternity.com/components/spotlight
@@ -46,71 +41,42 @@ const Hero = () => {
         />
       </div>
 
-      <div className="flex justify-center relative my-12 z-10">
+      <div className="flex justify-center relative my-1 z-10">
         <div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw] flex flex-col items-center justify-center">
-          <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-80 font-mono flex items-baseline justify-center space-x-2">
-            <span>Eka</span>
-            <span className="relative flex flex-row space-x-1">
-              <span
-                className="animate-pulse inline-block text-blue-300 rotate-[-10deg]"
-                style={{
-                  animationDelay: "0s",
-                  position: "relative",
-                  top: "-0.5rem",
-                  fontSize: "0.6rem",
-                }}
-              >
-                )
-              </span>
-              <span
-                className="animate-pulse inline-block text-blue-300 text-sm rotate-[-10deg]"
-                style={{
-                  animationDelay: "0.2s",
-                  position: "relative",
-                  top: "-0.8rem",
-                }}
-              >
-                )
-              </span>
-              <span
-                className="animate-pulse inline-block text-blue-300 text-xl rotate-[-10deg]"
-                style={{
-                  animationDelay: "0.4s",
-                  position: "relative",
-                  top: "-1.3rem",
-                }}
-              >
-                )
-              </span>
-            </span>
-          </p>
-
-          {/**
-           *  Link: https://ui.aceternity.com/components/text-generate-effect
-           *
-           *  change md:text-6xl, add more responsive code
-           */}
-          <TextGenerateEffect
-            words="AI for African Businesses"
-            className="text-center text-[40px] md:text-5xl lg:text-6xl"
+          <Image
+            src="/eka-logo.png"
+            alt="Eka logo"
+            width={240}
+            height={240}
+            className="-mb-2"
           />
 
-          <p className="text-center md:tracking-wider mb-2 text-sm md:text-lg lg:text-2xl">
-            AI-powered tools to streamline business operations and solve real
-            challenges across Africa.
+          {/* <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-sm font-mono">
+            Websites &middot; Logos &middot; AI Automation &mdash; African Businesses
+          </p> */}
+
+          <TextGenerateEffect
+            words="Your Website Built in Days. You Pay Only If You Love It."
+            className="text-center text-[32px] md:text-4xl lg:text-5xl"
+          />
+
+          <p className="text-center md:tracking-wider mb-4 text-sm md:text-base lg:text-lg max-w-xl">
+            No upfront fee. We design and deliver your complete
+            website, logo, or AI system- <b className="text-purple"n>before you pay a
+            single dollar.</b> Love it, pay. Don&apos;t, walk away. Zero risk.
           </p>
           <div className="flex gap-2">
-            <a href="#about">
+            <a href="#contact">
               <MagicButton
-                title="Who are we"
-                icon={<FaCircleInfo />}
+                title="Start for Free"
+                icon={<FaLocationArrow />}
                 position="right"
               />
             </a>
             <a href="#projects">
               <MagicButton
-                title="Case Studes"
-                icon={<FaLocationArrow />}
+                title="See Our Work"
+                icon={<FaCircleInfo />}
                 position="right"
               />
             </a>

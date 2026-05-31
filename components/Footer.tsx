@@ -18,16 +18,15 @@ const Footer = () => {
 
       <div className="flex flex-col items-center">
         <h1 className="heading lg:max-w-[45vw]">
-          Are <span className="text-purple">you</span> ready to take your
-          digital presence to the next level?
+          Ready to Get Your Business{" "}
+          <span className="text-purple">Online, Properly?</span>
         </h1>
         <p className="text-white-200 md:mt-10 my-5 text-center">
-          Reach out today and let&apos;s discuss how we can help you achieve
-          your goals.
+          Start for free. Pay only when you love it. No upfront fees.
         </p>
         <a href="mailto:tmuranda1@gmail.com">
           <MagicButton
-            title="Let's get in touch"
+            title="Start the Conversation"
             icon={<FaLocationArrow />}
             position="right"
           />
@@ -35,7 +34,7 @@ const Footer = () => {
       </div>
       <div className="flex mt-16 md:flex-row flex-col justify-between items-center">
         <p className="md:text-base text-sm md:font-normal font-light">
-          Copyright © 2025 Eka
+          Eka. You only pay when you love it.
         </p>
 
         <div className="flex items-center md:gap-3 gap-6">

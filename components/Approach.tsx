@@ -11,48 +11,35 @@ const Approach = () => {
       </h1>
       {/* remove bg-white dark:bg-black */}
       <div className="my-20 flex flex-col lg:flex-row items-center justify-center w-full gap-4">
-        {/* add des prop */}
         <Card
-          title="Planning & Strategy"
+          title="Discovery & Strategy"
           icon={<AceternityIcon order="Phase 1" />}
-          des="We'll collaborate to get your website's goals, target audience, 
-          and key functionalities. We'll discuss things like site structure, 
-          navigation, and content requirements."
+          des="We learn your business, your goals, and your customers. No assumptions."
         >
           <CanvasRevealEffect
             animationSpeed={5.1}
-            // add these classed for the border rounded overflowing -> rounded-3xl overflow-hidden
             containerClassName="bg-emerald-900 rounded-3xl overflow-hidden"
           />
         </Card>
         <Card
-          title="Development & Progress Update"
+          title="Build & Review"
           icon={<AceternityIcon order="Phase 2" />}
-          des="Once we agree on the plan, I go into
-          coding. From initial sketches to polished code, I keep you updated
-          every step of the way."
+          des="We build your solution and check in with you throughout. You see progress before it's finished."
         >
           <CanvasRevealEffect
             animationSpeed={3}
-            // change bg-black to bg-pink-900
             containerClassName="bg-pink-900 rounded-3xl overflow-hidden"
             colors={[
-              // change the colors of the
               [255, 166, 158],
               [221, 255, 247],
             ]}
             dotSize={2}
           />
-          {/* Radial gradient for the cute fade */}
-          {/* remove this one */}
-          {/* <div className="absolute inset-0 [mask-image:radial-gradient(400px_at_center,white,transparent)] bg-black/50 dark:bg-black/90" /> */}
         </Card>
         <Card
-          title="Development & Launch"
+          title="Launch & Sign-Off"
           icon={<AceternityIcon order="Phase 3" />}
-          des="This is where the magic happens! Based on the approved design, 
-          I'll turn everything into functional code, building your website
-          from the ground up."
+          des="We launch only when you're happy. Payment happens here, not before."
         >
           <CanvasRevealEffect
             animationSpeed={3}
@@ -61,9 +48,9 @@ const Approach = () => {
           />
         </Card>
         <Card
-          title="Monitoring and Improvemnts"
+          title="Support & Improvement"
           icon={<AceternityIcon order="Phase 4" />}
-          des="This is where we stand out from the rest! We dont leave you out to drown if you face problems. We stay in touch constantly monitoring ensuring that you remain satisfied."
+          des="We don't disappear after launch. We stay available, fix issues, and keep improving your site."
         >
           <CanvasRevealEffect
             animationSpeed={3}
