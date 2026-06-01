@@ -46,8 +46,8 @@ const Hero = () => {
           <Image
             src="/eka-logo.png"
             alt="Eka logo"
-            width={240}
-            height={240}
+            width={360}
+            height={360}
             className="-mb-2"
           />
 
