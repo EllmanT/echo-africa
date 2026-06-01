@@ -28,8 +28,8 @@ export const gridItems = [
   },
   {
     id: 3,
-    title: "Our Tech Stack",
-    description: "Tools we build with",
+    title: "Our Services",
+    description: "Tailored solutions to help your business thrive.",
     className: "lg:col-span-2 md:col-span-3 md:row-span-2",
     imgClassName: "",
     titleClassName: "justify-center",
