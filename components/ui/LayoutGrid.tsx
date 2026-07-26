@@ -42,10 +42,7 @@ export const LayoutGrid = ({ cards }: { cards: Card[] }) => {
           )}
         >
           <div
-            className={cn(
-              card.className,
-              "relative border-3 border-yellow-500"
-            )}
+            className={cn(card.className, "relative border-3 border-neutral-200")}
           >
             <motion.div
               onClick={() => handleClick(card)}

@@ -53,7 +53,8 @@ export const gridItems = [
     description: "Now available",
     className: "md:col-span-3 md:row-span-2 ",
     imgClassName: "absolute right-0 bottom-0 md:w-96 w-60",
-    titleClassName: "justify-center md:justify-start lg:justify-center",
+    titleClassName:
+      "justify-center md:justify-start lg:justify-center text-black",
     img: "/b5.svg",
     spareImg: "/grid.svg",
   },

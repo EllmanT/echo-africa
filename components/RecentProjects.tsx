@@ -22,8 +22,7 @@ const RecentProjects = () => {
               <PinContainer title={item.title} href={item.link}>
                 <div className="relative flex items-center justify-center sm:w-96 w-[80vw] overflow-hidden h-[20vh] lg:h-[30vh] mb-10">
                   <div
-                    className="absolute inset-0 lg:rounded-3xl"
-                    style={{ backgroundColor: "#13162D" }}
+                    className="absolute inset-0 lg:rounded-3xl bg-muted"
                   >
                     <img src="/bg.png" alt="bgimg" className="w-full h-full object-cover" />
                   </div>
@@ -39,11 +38,8 @@ const RecentProjects = () => {
                 </h1>
 
                 <p
-                  className="lg:text-xl lg:font-normal font-light text-sm line-clamp-2"
-                  style={{
-                    color: "#BEC1DD",
-                    margin: "1vh 0",
-                  }}
+                  className="lg:text-xl lg:font-normal font-light text-sm line-clamp-2 text-muted-foreground"
+                  style={{ margin: "1vh 0" }}
                 >
                   {item.des}
                 </p>
@@ -54,7 +50,7 @@ const RecentProjects = () => {
                       <p className="flex lg:text-xl md:text-xs text-sm text-purple">
                         Check Live Site
                       </p>
-                      <FaLocationArrow className="ms-3" color="#CBACF9" />
+                      <FaLocationArrow className="ms-3" color="#7C3AED" />
                     </div>
                   </div>
                 )}

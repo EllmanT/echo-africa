@@ -13,7 +13,7 @@ const Footer = () => {
         <img
           src="/footer-grid.svg"
           alt="grid"
-          className="w-full h-full opacity-50 "
+          className="w-full h-full opacity-20 "
         />
       </div>
 
@@ -22,7 +22,7 @@ const Footer = () => {
           Ready to Get Your Business{" "}
           <span className="text-purple">Online, Properly?</span>
         </h1>
-        <p className="text-white-200 md:mt-10 my-5 text-center">
+        <p className="text-muted-foreground md:mt-10 my-5 text-center">
           Start for free. Pay only when you love it. No upfront fees.
         </p>
         <a href="mailto:tmuranda1@gmail.com">
@@ -42,7 +42,7 @@ const Footer = () => {
           {socialMedia.map((info) => (
             <div
               key={info.id}
-              className="w-10 h-10 cursor-pointer flex justify-center items-center backdrop-filter backdrop-blur-lg saturate-180 bg-opacity-75 bg-black-200 rounded-lg border border-black-300"
+              className="w-10 h-10 cursor-pointer flex justify-center items-center backdrop-filter backdrop-blur-lg saturate-180 bg-white/70 rounded-lg border border-black/5 shadow-sm"
             >
               <a href={info.link} target="_blank">
                 <Image src={info.img} alt="icons" width={20} height={20} />

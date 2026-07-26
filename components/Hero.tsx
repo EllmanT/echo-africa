@@ -15,13 +15,16 @@ const Hero = () => {
       <div>
         <Spotlight
           className="-top-40 -left-10 md:-left-32 md:-top-20 h-screen"
-          fill="white"
+          fill="#7C3AED"
         />
         <Spotlight
           className="h-[80vh] w-[50vw] top-10 left-full"
-          fill="purple"
+          fill="#CBACF9"
         />
-        <Spotlight className="left-80 top-28 h-[80vh] w-[50vw]" fill="blue" />
+        <Spotlight
+          className="left-80 top-28 h-[80vh] w-[50vw]"
+          fill="#245FEB"
+        />
       </div>
 
       {/**
@@ -30,7 +33,7 @@ const Hero = () => {
        *  0.2 to 0.03
        */}
       <div
-        className="h-screen w-full dark:bg-gray-800 bg-white dark:bg-grid-white/[0.03] bg-grid-black-100/[0.2]
+        className="h-screen w-full dark:bg-gray-800 bg-white dark:bg-grid-white/[0.03] bg-grid-black-100/[0.03]
        absolute top-0 left-0 flex items-center justify-center"
       >
         {/* Radial gradient for the container to give a faded look */}
@@ -44,7 +47,7 @@ const Hero = () => {
       <div className="flex justify-center relative my-1 z-10">
         <div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw] flex flex-col items-center justify-center">
           <Image
-            src="/eka-logo.png"
+            src="/eka-logo-2.png"
             alt="Eka logo"
             width={360}
             height={360}
@@ -61,9 +64,10 @@ const Hero = () => {
           />
 
           <p className="text-center md:tracking-wider mb-4 text-sm md:text-base lg:text-lg max-w-xl">
-            No upfront fee. We design and deliver your complete
-            website, logo, or AI system- <b className="text-purple"n>before you pay a
-            single dollar.</b> Love it, pay. Don&apos;t, walk away. Zero risk.
+            No upfront fee. We design and deliver your complete website, logo,
+            or AI system-{" "}
+            <b className="text-purple">before you pay a single dollar.</b> Love
+            it, pay. Don&apos;t, walk away. Zero risk.
           </p>
           <div className="flex gap-2">
             <a href="#contact">

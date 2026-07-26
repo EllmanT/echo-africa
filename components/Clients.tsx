@@ -77,7 +77,7 @@ const Clients = () => {
           Don&apos;t take
           <span className="text-purple"> our word for it.</span>
         </h1>
-        <p className="text-white-200 mt-4 max-w-lg mx-auto text-base">
+        <p className="text-muted-foreground mt-4 max-w-lg mx-auto text-base">
           Real WhatsApp conversations. Real clients. Real results.
         </p>
       </motion.div>
@@ -122,7 +122,7 @@ const Clients = () => {
                   alt={index < socialProofImages.length ? `Client message ${index + 1}` : ""}
                   className={cn(
                     heightClass,
-                    "w-auto rounded-xl border border-white/10 shadow-md object-contain"
+                    "w-auto rounded-xl border border-black/10 shadow-md object-contain"
                   )}
                   draggable={false}
                 />
@@ -144,7 +144,7 @@ const Clients = () => {
           Trusted By Businesses
           <span className="text-purple"> Across Zimbabwe</span>
         </h2>
-        <p className="text-white-200 mt-4 mb-10">
+        <p className="text-muted-foreground mt-4 mb-10">
           From car dealerships and mines to creatives and service businesses.
         </p>
       </motion.div>
