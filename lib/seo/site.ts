@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "Eka",
   legalName: "Eka",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://eka.dev").replace(/\/$/, ""),
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.eka.dev").replace(/\/$/, ""),
   email: "tmuranda1@gmail.com",
   founder: "Tapiwa Muranda",
   linkedin: "https://www.linkedin.com/in/tapiwa-muranda-85747b335/",
