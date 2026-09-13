@@ -9,7 +9,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 
 export const metadata: Metadata = buildMetadata({
-  title: "About Eka — Web & AI Development in Zimbabwe",
+  title: "About",
   description:
     "Eka is founded by Tapiwa Muranda, a full-stack developer and AI practitioner based in Harare, Zimbabwe, building websites, custom software, and AI automation for African businesses.",
   path: "/about",

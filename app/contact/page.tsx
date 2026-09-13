@@ -8,7 +8,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Contact Eka — Web & AI Development, Zimbabwe",
+  title: "Contact",
   description:
     "Get in touch with Eka to start a website, AI automation, or custom software project. Based in Harare, Zimbabwe, serving businesses across Africa — zero risk, pay only when you love it.",
   path: "/contact",
