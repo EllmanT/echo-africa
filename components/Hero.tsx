@@ -52,6 +52,7 @@ const Hero = () => {
             width={360}
             height={360}
             className="-mb-2"
+            priority
           />
 
           {/* <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-sm font-mono">
@@ -59,6 +60,7 @@ const Hero = () => {
           </p> */}
 
           <TextGenerateEffect
+            as="h1"
             words="Your Website Built in Days. You Pay Only If You Love It."
             className="text-center text-[32px] md:text-4xl lg:text-5xl"
           />

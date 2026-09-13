@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { companies } from "@/data";
+import { companies, testimonials } from "@/data";
+import { InfiniteMovingCards } from "./ui/InfiniteCards";
 
 const socialProofImages = [
   "/social-proof/sproof-1.png",
@@ -73,14 +74,17 @@ const Clients = () => {
         transition={{ duration: 0.65, ease: "easeOut" }}
         className="text-center mb-10"
       >
-        <h1 className="heading">
+        <h2 className="heading">
           Don&apos;t take
           <span className="text-purple"> our word for it.</span>
-        </h1>
+        </h2>
         <p className="text-muted-foreground mt-4 max-w-lg mx-auto text-base">
           Real WhatsApp conversations. Real clients. Real results.
         </p>
       </motion.div>
+
+      {/* Text testimonials — crawlable content, not just screenshot images */}
+      <InfiniteMovingCards items={testimonials} direction="left" speed="slow" />
 
       {/* Social proof sliding strip */}
       <div
