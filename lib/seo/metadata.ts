@@ -17,13 +17,13 @@ export function buildMetadata({
   type?: "website" | "article";
 }): Metadata {
   // Pages without a distinct `image` inherit the root app/opengraph-image.tsx
-  // via Next's file-convention metadata resolution — no need to repeat it here.
+  // via Next's file-convention metadata resolution, so no need to repeat it here.
   const images = image ? [{ url: image, width: 1200, height: 630, alt: title }] : undefined;
 
   // Next's `title.template` only rewrites the <title> tag, not openGraph/twitter
-  // titles — apply the same "%s | Eka — ..." suffix here so shared links match
+  // titles, so apply the same "%s | Eka" suffix here so shared links match
   // what shows in the browser tab, rather than showing a bare "About"/"Contact".
-  const socialTitle = title.includes(siteConfig.name) ? title : `${title} | Eka — Web & AI Development in Zimbabwe`;
+  const socialTitle = title.includes(siteConfig.name) ? title : `${title} | Eka`;
 
   return {
     title,

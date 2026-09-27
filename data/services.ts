@@ -15,9 +15,9 @@ export const services: Service[] = [
     slug: "web-development",
     name: "Web Development",
     shortDescription:
-      "Fast, professional websites built for Zimbabwean and African businesses — designed to load quickly on any device and turn visitors into customers.",
+      "Fast, professional websites built for Zimbabwean and African businesses, designed to load quickly on any device and turn visitors into customers.",
     heroDescription:
-      "We design and build websites for businesses in Zimbabwe and across Africa — fast, mobile-friendly, and built to work reliably wherever your customers are browsing from. You see the finished site before you pay a single dollar.",
+      "We design and build websites for businesses in Zimbabwe and across Africa, fast, mobile-friendly, and built to work reliably wherever your customers are browsing from. You see the finished site before you pay a single dollar.",
     keywords: [
       "web development Zimbabwe",
       "website design Harare",
@@ -29,17 +29,17 @@ export const services: Service[] = [
       {
         title: "Built for real network conditions",
         description:
-          "Sites optimised to load fast on mobile data, not just fibre — because that's how most of your customers in Zimbabwe will actually visit.",
+          "Sites optimised to load fast on mobile data, not just fibre, because that's how most of your customers in Zimbabwe will actually visit.",
       },
       {
         title: "Mobile-first design",
         description:
-          "Every site is designed and tested to work cleanly on phones first, then scaled up — matching how most local traffic actually browses.",
+          "Every site is designed and tested to work cleanly on phones first, then scaled up, matching how most local traffic actually browses.",
       },
       {
         title: "Modern tech, built to last",
         description:
-          "We build on Next.js and TypeScript — the same stack used by major global companies — so your site stays fast, secure, and easy to extend.",
+          "We build on Next.js and TypeScript, the same stack used by major global companies, so your site stays fast, secure, and easy to extend.",
       },
       {
         title: "Zero-risk delivery",
@@ -51,7 +51,7 @@ export const services: Service[] = [
       {
         question: "How much does a website cost in Zimbabwe with Eka?",
         answer:
-          "Cost depends on the scope of the site — a simple business site is a smaller project than a catalogue-driven site with dozens of listings. Because we work on a zero-risk basis, you see the finished website and agree the price before you pay anything, so there's no upfront guesswork.",
+          "Cost depends on the scope of the site, a simple business site is a smaller project than a catalogue-driven site with dozens of listings. Because we work on a zero-risk basis, you see the finished website and agree the price before you pay anything, so there's no upfront guesswork.",
       },
       {
         question: "How long does it take to build a website?",
@@ -66,7 +66,7 @@ export const services: Service[] = [
       {
         question: "Will my website work well on mobile?",
         answer:
-          "Yes — every site we build is designed mobile-first, since most visitors in Zimbabwe and across Africa browse on phones rather than desktops.",
+          "Yes, every site we build is designed mobile-first, since most visitors in Zimbabwe and across Africa browse on phones rather than desktops.",
       },
     ],
   },
@@ -74,9 +74,9 @@ export const services: Service[] = [
     slug: "ai-automation",
     name: "AI Automation",
     shortDescription:
-      "AI-powered automation for African businesses — document processing, reporting, and workflow automation that saves your team real hours every week.",
+      "AI-powered automation for African businesses, document processing, reporting, and workflow automation that saves your team real hours every week.",
     heroDescription:
-      "We build AI automation that takes repetitive, manual work off your team's plate — document processing, reporting, customer enquiries, and scheduling — so your people can focus on work that actually needs them.",
+      "We build AI automation that takes repetitive, manual work off your team's plate, document processing, reporting, customer enquiries, and scheduling, so your people can focus on work that actually needs them.",
     keywords: [
       "AI automation Zimbabwe",
       "business automation Harare",
@@ -103,14 +103,14 @@ export const services: Service[] = [
       {
         title: "Built one task at a time",
         description:
-          "We automate a single, clearly-defined task first and prove it works reliably before expanding — not a risky all-at-once overhaul.",
+          "We automate a single, clearly-defined task first and prove it works reliably before expanding, not a risky all-at-once overhaul.",
       },
     ],
     faqs: [
       {
         question: "What does AI automation actually mean for a small business?",
         answer:
-          "In practice, it means taking a repetitive task your team already does by hand — data entry, document processing, answering routine questions — and having software handle it reliably instead, usually combining a trigger (a new email, an order, a form) with an AI-assisted step.",
+          "In practice, it means taking a repetitive task your team already does by hand, data entry, document processing, answering routine questions, and having software handle it reliably instead, usually combining a trigger (a new email, an order, a form) with an AI-assisted step.",
       },
       {
         question: "Which tasks should I automate first?",
@@ -125,7 +125,7 @@ export const services: Service[] = [
       {
         question: "Is AI automation reliable enough for something like invoicing?",
         answer:
-          "Yes, when built correctly — with a human review step for anything involving money or legal documents. We don't remove oversight where mistakes are costly; we remove repetitive manual work.",
+          "Yes, when built correctly, with a human review step for anything involving money or legal documents. We don't remove oversight where mistakes are costly; we remove repetitive manual work.",
       },
     ],
   },
@@ -133,9 +133,9 @@ export const services: Service[] = [
     slug: "software-development",
     name: "Custom Software Development",
     shortDescription:
-      "Custom software and systems for African businesses — from internal tools to specialised systems like ZIMRA fiscalisation integration.",
+      "Custom software and systems for African businesses, from internal tools to specialised systems like ZIMRA fiscalisation integration.",
     heroDescription:
-      "Beyond websites, we build custom software for businesses with needs a template can't cover — internal tools, system integrations, and specialised systems including ZIMRA fiscalisation.",
+      "Beyond websites, we build custom software for businesses with needs a template can't cover, internal tools, system integrations, and specialised systems including ZIMRA fiscalisation.",
     keywords: [
       "custom software development Zimbabwe",
       "software development company Harare",
@@ -157,7 +157,7 @@ export const services: Service[] = [
       {
         title: "System integration",
         description:
-          "Connecting the systems you already use — accounting, stock, CRM — so data moves between them without manual re-entry.",
+          "Connecting the systems you already use, accounting, stock, CRM, so data moves between them without manual re-entry.",
       },
       {
         title: "Built to your business, not a template",
@@ -169,12 +169,12 @@ export const services: Service[] = [
       {
         question: "Do you support ZIMRA fiscalisation systems?",
         answer:
-          "Yes — we implement and support fiscalisation systems for businesses across Zimbabwe, and are trusted by multiple clients for reliable, fast technical support.",
+          "Yes, we implement and support fiscalisation systems for businesses across Zimbabwe, and are trusted by multiple clients for reliable, fast technical support.",
       },
       {
         question: "What kind of custom software do you build?",
         answer:
-          "Internal tools, dashboards, system integrations, and specialised business systems — anything a generic off-the-shelf product doesn't fit well.",
+          "Internal tools, dashboards, system integrations, and specialised business systems, anything a generic off-the-shelf product doesn't fit well.",
       },
       {
         question: "Can you integrate with the systems we already use?",

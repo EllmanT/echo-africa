@@ -1,9 +1,11 @@
 export const navItems = [
   { name: "Services", link: "/services" },
   { name: "Work", link: "/work" },
-  { name: "Blog", link: "/blog" },
-  { name: "Contact", link: "/contact" },
+  { name: "Playbook", link: "/playbook", highlight: true },
+  { name: "About", link: "/about" },
 ];
+
+export const headerCta = { name: "Let's Connect", link: "/contact" };
 
 export const gridItems = [
   {
@@ -106,17 +108,17 @@ export const projects = [
   {
     id: 5,
     title: "Business Automation with AI",
-    des: "We automate the tasks your team does by hand every day. Document processing, reporting, scheduling — handled by AI so your team can focus on real work.",
+    des: "We automate the tasks your team does by hand every day. Document processing, reporting, scheduling, handled by AI so your team can focus on real work.",
     img: "/b5.svg",
     iconLists: [],
-    link: "mailto:tmuranda1@gmail.com",
+    link: "/contact",
   },
 ];
 
 export const testimonials = [
   {
     quote:
-      "Great work on the website — we’re really pleased with how it turned out. The AI features were a nice touch we didn’t expect.",
+      "Great work on the website, we’re really pleased with how it turned out. The AI features were a nice touch we didn’t expect.",
     name: "Faramatsi Motors",
     title: "Motor Dealership, Harare",
   },
@@ -152,7 +154,7 @@ export const testimonials = [
   },
 ];
 
-// CLIENT LOGOS — Owner to replace placeholder paths with actual logo files.
+// CLIENT LOGOS, Owner to replace placeholder paths with actual logo files.
 // Logos should be PNG with transparent background, ~200px wide.
 export const companies = [
   {
@@ -176,7 +178,7 @@ export const companies = [
   {
     id: 4,
     name: "Kolkart Mining",
-    // PLACEHOLDER — owner to replace with final Kolkart Mining logo file
+    // PLACEHOLDER, owner to replace with final Kolkart Mining logo file
     img: "/client-logos/kolkart_mining-clean.png",
     nameImg: "/client-logos/kolkart_mining-clean.png",
   },

@@ -26,7 +26,7 @@ const socialProofImages = [
   "/social-proof/sproof-17.png",
 ];
 
-// Duplicate once so the seamless loop is handled in JSX — no cloneNode needed,
+// Duplicate once so the seamless loop is handled in JSX, no cloneNode needed,
 // which prevents React reconciliation from silently removing the clones.
 const doubledImages = [...socialProofImages, ...socialProofImages];
 
@@ -83,7 +83,7 @@ const Clients = () => {
         </p>
       </motion.div>
 
-      {/* Text testimonials — crawlable content, not just screenshot images */}
+      {/* Text testimonials, crawlable content, not just screenshot images */}
       <InfiniteMovingCards items={testimonials} direction="left" speed="slow" />
 
       {/* Social proof sliding strip */}

@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Eka — Web Development & AI Automation Agency in Zimbabwe";
+export const alt = "Eka, Web Development & AI Automation Agency in Zimbabwe";
 
 export default async function OpengraphImage() {
   return new ImageResponse(
@@ -50,7 +50,7 @@ export default async function OpengraphImage() {
             maxWidth: 900,
           }}
         >
-          Building Africa&apos;s digital future — you only pay when you love it.
+          Building Africa&apos;s digital future, you only pay when you love it.
         </div>
       </div>
     ),

@@ -1,9 +1,11 @@
 import { siteConfig } from "@/lib/seo/site";
 import { services } from "@/data/services";
-import { caseStudies } from "@/data/case-studies";
-import { getAllPosts } from "@/lib/blog";
+import { getPublishedProjects } from "@/lib/content/projects";
+import { getAllPublishedPosts } from "@/lib/content/posts";
 
 export async function GET() {
+  const [caseStudies, posts] = await Promise.all([getPublishedProjects(), getAllPublishedPosts()]);
+
   const lines = [
     `# ${siteConfig.name}`,
     "",
@@ -23,8 +25,8 @@ export async function GET() {
     ),
     "",
     "## Blog",
-    ...getAllPosts().map(
-      (post) => `- [${post.title}](${siteConfig.url}/blog/${post.slug}): ${post.description}`
+    ...posts.map(
+      (post) => `- [${post.title}](${siteConfig.url}/playbook/${post.slug}): ${post.description}`
     ),
     "",
     "## Contact",

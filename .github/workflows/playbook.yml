@@ -1,0 +1,29 @@
+name: Playbook article engine
+
+# Times are UTC. Africa/Harare is UTC+2 year-round (no DST), so these land at
+# 07:00, 12:30 and 18:00 Harare time.
+on:
+  schedule:
+    - cron: "0 5 * * *"
+    - cron: "30 10 * * *"
+    - cron: "0 16 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine slot
+        id: slot
+        run: |
+          hour=$(date -u +%H)
+          if [ "$hour" = "05" ]; then echo "slot=morning" >> "$GITHUB_OUTPUT"
+          elif [ "$hour" = "10" ]; then echo "slot=midday" >> "$GITHUB_OUTPUT"
+          else echo "slot=evening" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Call the Playbook cron endpoint
+        run: |
+          curl --fail-with-body -sS -X POST \
+            "${{ secrets.SITE_URL }}/api/cron/playbook?slot=${{ steps.slot.outputs.slot }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

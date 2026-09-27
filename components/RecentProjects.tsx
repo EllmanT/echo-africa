@@ -15,7 +15,7 @@ const RecentProjects = () => {
       </h2>
       <div className="flex flex-wrap items-center justify-center p-4 gap-16 mt-10">
         {projects.map((item) => (
-          <a key={item.id} href={item.link} target="_blank">
+          <a key={item.id} href={item.link} target={item.link.startsWith("http") ? "_blank" : undefined}>
             <div
               className="lg:min-h-[32.5rem] h-[25rem] flex items-center justify-center sm:w-96 w-[80vw]"
               key={item.id}
@@ -45,7 +45,7 @@ const RecentProjects = () => {
                   {item.des}
                 </p>
 
-                {!item.link.startsWith("mailto:") && (
+                {item.link.startsWith("http") && (
                   <div className="flex items-center justify-end mt-7 mb-3">
                     <div className="flex justify-center items-center">
                       <p className="flex lg:text-xl md:text-xs text-sm text-purple">

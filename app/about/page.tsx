@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FaLocationArrow } from "react-icons/fa6";
 import type { Metadata } from "next";
 
@@ -27,7 +28,7 @@ const AboutPage = () => {
         </h1>
         <p className="text-muted-foreground mt-4 text-base md:text-lg">
           Eka is a {siteConfig.city}-based web development and AI automation
-          agency, founded by Tapiwa Muranda — a full-stack developer and AI
+          agency, founded by Tapiwa Muranda, a full-stack developer and AI
           practitioner working with businesses across Zimbabwe and Africa.
         </p>
         <p className="text-muted-foreground mt-4 text-base md:text-lg">
@@ -35,20 +36,20 @@ const AboutPage = () => {
           automation at Axis Solutions, and is JS Mastery certified. That
           background shows up in how Eka works: modern tools (Next.js,
           TypeScript, AI automation with n8n), applied to real business
-          problems — not templates dressed up as custom work.
+          problems, not templates dressed up as custom work.
         </p>
         <p className="text-muted-foreground mt-4 text-base md:text-lg">
           Eka operates on a zero-risk model: we build your website, logo, or
           AI system first, and you only pay once you&apos;re satisfied with the
           result.
         </p>
-        <a href="mailto:tmuranda1@gmail.com">
+        <Link href="/contact">
           <MagicButton
             title="Start the Conversation"
             icon={<FaLocationArrow />}
             position="right"
           />
-        </a>
+        </Link>
       </div>
 
       <Experience />

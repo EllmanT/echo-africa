@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Bricolage_Grotesque } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider } from "./provider";
@@ -12,12 +12,17 @@ import {
 } from "@/lib/seo/structured-data";
 
 const inter = Inter({ subsets: ["latin"] });
+const display = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Eka — Web Development & AI Automation Agency in Zimbabwe",
-    template: "%s | Eka — Web & AI Development in Zimbabwe",
+    default: "Eka | Web Development & AI Automation Agency in Zimbabwe",
+    template: "%s | Eka",
   },
   description: siteConfig.description,
   keywords: [
@@ -30,7 +35,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Eka — Web Development & AI Automation Agency in Zimbabwe",
+    title: "Eka | Web Development & AI Automation Agency in Zimbabwe",
     description: siteConfig.description,
     url: siteConfig.url,
     siteName: siteConfig.name,
@@ -39,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Eka — Web Development & AI Automation Agency in Zimbabwe",
+    title: "Eka | Web Development & AI Automation Agency in Zimbabwe",
     description: siteConfig.description,
   },
   robots: { index: true, follow: true },
@@ -62,7 +67,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} ${display.variable}`}>
         <JsonLd data={buildOrganizationSchema()} />
         <JsonLd data={buildWebSiteSchema()} />
         <Analytics />

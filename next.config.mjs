@@ -3,7 +3,13 @@ import {withSentryConfig} from '@sentry/nextjs';
 const nextConfig = {
     typescript:{
         ignoreBuildErrors:true
-    }
+    },
+    async redirects() {
+        return [
+            { source: "/blog", destination: "/playbook", permanent: true },
+            { source: "/blog/:slug", destination: "/playbook/:slug", permanent: true },
+        ];
+    },
 };
 
 export default nextConfig

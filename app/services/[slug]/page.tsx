@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FaLocationArrow } from "react-icons/fa6";
 import type { Metadata } from "next";
@@ -56,13 +57,13 @@ const ServicePage = ({ params }: { params: { slug: string } }) => {
         <p className="text-muted-foreground mt-4 text-base md:text-lg">
           {service.heroDescription}
         </p>
-        <a href="mailto:tmuranda1@gmail.com">
+        <Link href="/contact">
           <MagicButton
             title="Start the Conversation"
             icon={<FaLocationArrow />}
             position="right"
           />
-        </a>
+        </Link>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 pb-16">

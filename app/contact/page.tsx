@@ -1,72 +1,129 @@
-import { FaLocationArrow, FaLinkedin, FaRegEnvelope } from "react-icons/fa6";
+import Image from "next/image";
 import type { Metadata } from "next";
+import { FaEnvelope, FaWhatsapp } from "react-icons/fa6";
 
 import PageShell from "@/components/PageShell";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import MagicButton from "@/components/MagicButton";
+import FaqSection from "@/components/FaqSection";
+import LeadForm from "@/components/funnel/LeadForm";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
+import { getFaqsForPage } from "@/lib/content/faqs";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Contact",
+  title: "Start Your Project: Website, Logo or AI Automation",
   description:
-    "Get in touch with Eka to start a website, AI automation, or custom software project. Based in Harare, Zimbabwe, serving businesses across Africa — zero risk, pay only when you love it.",
+    "Tell us what you need in about two minutes. We build it first and you pay only when you love it. Based in Harare, working with businesses across Africa.",
   path: "/contact",
-  keywords: ["contact web developer Zimbabwe", "hire AI automation agency Harare"],
+  keywords: ["contact web developer Zimbabwe", "hire AI automation agency Harare", "website quote Zimbabwe"],
 });
 
-const ContactPage = () => {
+const NEXT_STEPS = [
+  {
+    title: "You send this form",
+    body: "It takes about two minutes. You only answer what we need to understand your project.",
+  },
+  {
+    title: "You hear from us straight away",
+    body: "An email lands in your inbox with your next step. If it looks like a fit, you can book a call right after you send.",
+  },
+  {
+    title: "We build it, you decide",
+    body: "We build first. You look at it, ask for changes, and pay only when you love it.",
+  },
+];
+
+const ContactPage = async () => {
+  const faqs = await getFaqsForPage("contact");
   return (
     <PageShell>
       <Breadcrumbs items={[{ name: "Contact", path: "/contact" }]} />
 
-      <div className="py-14 max-w-2xl">
-        <h1 className="heading text-left">
-          Let&apos;s <span className="text-purple">talk</span>
-        </h1>
-        <p className="text-muted-foreground mt-4 text-base md:text-lg">
-          Tell us what you&apos;re trying to build — a website, AI automation, or
-          custom software — and we&apos;ll get back to you. No upfront fees: we
-          build first, you pay only when you&apos;re happy with the result.
-        </p>
-      </div>
+      <section className="mx-auto max-w-3xl pb-12 pt-14 text-center md:pb-16 md:pt-20">
+        <div className="animate-rise">
+          <h1 className="font-display text-5xl font-extrabold leading-[1.02] tracking-[-0.035em] md:text-7xl">
+            Tell us about your <span className="text-purple">project.</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            Two minutes. No commitment. We build it first, and you pay only when you love it.
+          </p>
+        </div>
+      </section>
 
-      <div className="grid sm:grid-cols-2 gap-6 pb-20 max-w-2xl">
-        <a
-          href={`mailto:${siteConfig.email}`}
-          className="rounded-3xl border border-black/[0.06] shadow-input bg-white p-6 flex flex-col gap-3 hover:shadow-xl transition duration-200"
-        >
-          <FaRegEnvelope className="text-purple" size={22} />
-          <div>
-            <h2 className="font-bold">Email</h2>
-            <p className="text-muted-foreground text-sm mt-1">{siteConfig.email}</p>
-          </div>
-        </a>
-        <a
-          href={siteConfig.linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-3xl border border-black/[0.06] shadow-input bg-white p-6 flex flex-col gap-3 hover:shadow-xl transition duration-200"
-        >
-          <FaLinkedin className="text-purple" size={22} />
-          <div>
-            <h2 className="font-bold">LinkedIn</h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Connect with Tapiwa Muranda
-            </p>
-          </div>
-        </a>
-      </div>
-
-      <div className="pb-20">
-        <a href={`mailto:${siteConfig.email}`}>
-          <MagicButton
-            title="Start the Conversation"
-            icon={<FaLocationArrow />}
-            position="right"
+      <div className="animate-rise relative overflow-hidden rounded-[2rem]" style={{ animationDelay: "120ms" }}>
+        <div className="relative aspect-[16/8] w-full md:aspect-[21/8]">
+          <Image
+            src="/images/contact/harare-night.jpg"
+            alt="Harare city centre at dusk with light trails from passing traffic"
+            fill
+            priority
+            sizes="(min-width: 1280px) 1200px, 100vw"
+            className="object-cover object-[50%_40%]"
           />
-        </a>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+          <p className="absolute bottom-5 left-6 right-6 font-display text-xl font-bold text-white md:bottom-8 md:left-10 md:text-3xl">
+            Built in Harare, for businesses across Africa.
+          </p>
+        </div>
       </div>
+
+      <section className="mx-auto grid max-w-6xl gap-14 py-16 md:py-24 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-20">
+        <div className="relative">
+          <LeadForm />
+        </div>
+
+        <aside className="lg:sticky lg:top-28 lg:self-start">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-black/[0.06] bg-muted">
+            <Image
+              src="/images/contact/owner-laptop.jpg"
+              alt="A business owner working on a laptop in a bright office"
+              fill
+              sizes="(min-width: 1024px) 400px, 100vw"
+              className="object-cover"
+            />
+          </div>
+
+          <h2 className="mt-10 font-display text-2xl font-bold tracking-tight">What happens next</h2>
+          <ol className="mt-5 space-y-6">
+            {NEXT_STEPS.map((s, i) => (
+              <li key={s.title} className="flex gap-4">
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple/10 font-display text-sm font-bold text-purple"
+                >
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="font-semibold">{s.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-10 space-y-3 border-t border-black/[0.08] pt-8">
+            <p className="text-sm text-muted-foreground">Prefer to talk right now?</p>
+            <a
+              href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent("Hi Tapiwa, I'd like to talk about a project.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 font-semibold transition-colors hover:text-purple"
+            >
+              <FaWhatsapp size={20} className="text-[#25D366]" />
+              {siteConfig.whatsappDisplay}
+            </a>
+            <a
+              href={`mailto:${siteConfig.email}`}
+              className="flex items-center gap-3 font-semibold transition-colors hover:text-purple"
+            >
+              <FaEnvelope size={18} className="text-purple" />
+              {siteConfig.email}
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <FaqSection faqs={faqs} heading="Quick answers" />
     </PageShell>
   );
 };

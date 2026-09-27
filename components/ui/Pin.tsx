@@ -71,7 +71,7 @@ export const PinPerspective = ({
       <div className=" w-full h-full -mt-7 flex-none  inset-0">
         <div className="absolute top-0 inset-x-0  flex justify-center">
           {/* Not an <a>: the whole card in RecentProjects.tsx is already a link,
-              and a nested <a> inside that outer <a> is invalid HTML — browsers
+              and a nested <a> inside that outer <a> is invalid HTML, browsers
               silently restructure it, which caused a React hydration mismatch. */}
           <div className="relative flex space-x-2 items-center z-10 rounded-full bg-white py-0.5 px-4 ring-1 ring-black/10 shadow-sm whitespace-nowrap">
             <span className="relative z-20 text-black text-xs font-bold inline-block py-0.5 whitespace-nowrap">

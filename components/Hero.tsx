@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Link from "next/link";
 import { FaCircleInfo, FaLocationArrow } from "react-icons/fa6";
 
 import MagicButton from "./MagicButton";
@@ -46,14 +46,7 @@ const Hero = () => {
 
       <div className="flex justify-center relative my-1 z-10">
         <div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw] flex flex-col items-center justify-center">
-          <Image
-            src="/eka-logo-2.png"
-            alt="Eka logo"
-            width={360}
-            height={360}
-            className="-mb-2"
-            priority
-          />
+          <div className="h-10 md:h-16" />
 
           {/* <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-sm font-mono">
             Websites &middot; Logos &middot; AI Automation &mdash; African Businesses
@@ -72,20 +65,20 @@ const Hero = () => {
             it, pay. Don&apos;t, walk away. Zero risk.
           </p>
           <div className="flex gap-2">
-            <a href="#contact">
+            <Link href="/contact">
               <MagicButton
                 title="Start for Free"
                 icon={<FaLocationArrow />}
                 position="right"
               />
-            </a>
-            <a href="#projects">
+            </Link>
+            <Link href="/work">
               <MagicButton
                 title="See Our Work"
                 icon={<FaCircleInfo />}
                 position="right"
               />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

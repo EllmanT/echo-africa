@@ -13,7 +13,7 @@ import { services } from "@/data/services";
 export const metadata: Metadata = buildMetadata({
   title: "Web Development, AI Automation & Software Development Services",
   description:
-    "Eka's services: web development, AI automation, and custom software development for businesses in Zimbabwe and across Africa. Zero risk — you only pay when you love it.",
+    "Eka's services: web development, AI automation, and custom software development for businesses in Zimbabwe and across Africa. Zero risk, you only pay when you love it.",
   path: "/services",
   keywords: [
     "web development Zimbabwe",
@@ -44,7 +44,7 @@ const ServicesPage = () => {
         </h1>
         <p className="text-muted-foreground mt-4">
           Websites, AI automation, and custom software for businesses in
-          Zimbabwe and across Africa — built on a zero-risk basis. You see
+          Zimbabwe and across Africa, built on a zero-risk basis. You see
           the finished work before you pay anything.
         </p>
       </div>
