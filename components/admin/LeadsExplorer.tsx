@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FaWhatsapp } from "react-icons/fa6";
 
 import { StatusBadge, TierBadge } from "./Badge";
-import { LEAD_STATUSES } from "@/lib/leads/types";
+import { LEAD_STATUSES, budgetDisplay } from "@/lib/leads/types";
 import type { AdminLead } from "@/lib/admin/leads";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 
@@ -86,7 +86,7 @@ const LeadDrawer = ({ lead, onClose, onSaved }: { lead: AdminLead; onClose: () =
           <DetailRow label="Role" value={lead.role} />
           <DetailRow label="Main goal" value={lead.goal} />
           <DetailRow label="Timing" value={lead.timing} />
-          <DetailRow label="Budget" value={lead.budget} />
+          <DetailRow label="Budget" value={budgetDisplay(lead)} />
           <DetailRow label="Notes from the lead" value={lead.notes} />
           <DetailRow label="Score" value={lead.score !== undefined ? `${lead.score} / 100` : undefined} />
           <DetailRow label="Source page" value={lead.source} />
@@ -267,7 +267,7 @@ const LeadsExplorer = ({ leads: initialLeads }: { leads: AdminLead[] }) => {
                 <td className="px-5 py-3">
                   <StatusBadge status={lead.status} />
                 </td>
-                <td className="px-5 py-3 text-muted-foreground">{lead.budget ?? "-"}</td>
+                <td className="px-5 py-3 text-muted-foreground">{budgetDisplay(lead)}</td>
                 <td className="px-5 py-3 text-muted-foreground">{formatDate(lead.createdAt)}</td>
               </tr>
             ))}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BUDGETS, GOALS, ROLES, SERVICES, TIMINGS } from "./types";
+import { GOALS, ROLES, SERVICES, TIMINGS } from "./types";
 
 /** Digits with an optional leading +, 9 to 15 digits once spaces and dashes are removed. */
 const phone = z
@@ -30,8 +30,9 @@ export const goalSchema = z.object({
   timing: z.enum(TIMINGS, { errorMap: () => ({ message: "Pick one" }) }),
 });
 
+/** `budget` is the key of a pricing tier. The server checks it against the live tiers for these services. */
 export const budgetSchema = z.object({
-  budget: z.enum(BUDGETS, { errorMap: () => ({ message: "Pick a range" }) }),
+  budget: z.string({ required_error: "Pick a range" }).trim().min(1, "Pick a range").max(60),
   notes: z.string().trim().max(1000).optional().or(z.literal("")),
 });
 

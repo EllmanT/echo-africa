@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,12 +9,11 @@ import { FaArrowLeft, FaArrowRight, FaWhatsapp } from "react-icons/fa6";
 
 import ChoiceTile from "./ChoiceTile";
 import LeadResult from "./LeadResult";
+import PricingStep from "./PricingStep";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input, Textarea } from "@/components/ui/input";
 import { fullLeadSchema } from "@/lib/leads/schema";
 import {
-  BUDGETS,
-  BUDGET_LABELS,
   GOALS,
   GOAL_LABELS,
   ROLES,
@@ -26,6 +25,7 @@ import {
   type LeadTier,
   type Service,
 } from "@/lib/leads/types";
+import { goalPhrase, pricingSetFor, primaryContext, tailorTiers, type PricingConfig } from "@/lib/leads/pricing";
 import { siteConfig } from "@/lib/seo/site";
 import { track } from "@/lib/analytics/track";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,7 @@ const SERVICE_HINTS: Record<Service, string> = {
   logo: "A mark you are proud to put on everything",
   "ai-automation": "Hand repeat work over to AI",
   "custom-software": "Systems built around how you work",
+  "system-integration": "Connect the tools you already use",
   "not-sure": "Not sure yet. Help me decide",
 };
 
@@ -62,17 +63,18 @@ const STEPS = [
     fields: ["goal", "timing"] as const,
   },
   {
+    // Title and hint are personalized at render time, see below.
     title: "What investment feels right?",
-    hint: "Simple business websites start at $500. Bigger projects cost more. This helps us suggest the right plan.",
+    hint: "",
     fields: ["budget"] as const,
   },
 ];
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
-type Result = { tier: LeadTier; name: string; email: string; businessName: string };
+type Result = { tier: LeadTier; name: string; email: string; businessName: string; booking: boolean; needs: string };
 
-const LeadForm = () => {
+const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
   const reduce = useReducedMotion();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -100,6 +102,40 @@ const LeadForm = () => {
     },
   });
 
+  // Deep links like /contact?service=logo pre-select that service (the Services page uses these).
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("service");
+    if (wanted && wanted !== "not-sure" && (SERVICES as readonly string[]).includes(wanted)) {
+      form.setValue("services", [wanted as Service]);
+    }
+  }, [form]);
+
+  // The price tiers, tailored to what this visitor told us in the earlier steps.
+  const services = form.watch("services") ?? [];
+  const goal = form.watch("goal");
+  const businessName = form.watch("businessName");
+  const setKey = pricingSetFor(services);
+  const context = primaryContext(services);
+  const tiers = useMemo(
+    () => tailorTiers(pricing[setKey], context, { business: businessName, goal }),
+    [pricing, setKey, context, businessName, goal]
+  );
+  const alsoNote = useMemo(() => {
+    if (setKey === "logo" || services.length < 2) return undefined;
+    const extras = services
+      .filter((s) => s !== "not-sure" && primaryContext([s]) !== context)
+      .map((s) => SERVICE_LABELS[s].toLowerCase());
+    return extras.length ? `You also picked ${extras.join(" and ")}. We'll cover that with you when we talk.` : undefined;
+  }, [services, setKey, context]);
+
+  // If they go back and change services so the old tier no longer exists, clear it.
+  const budget = form.watch("budget");
+  useEffect(() => {
+    if (budget && !pricing[setKey].some((t) => t.key === budget)) {
+      form.setValue("budget", "" as never);
+    }
+  }, [budget, pricing, setKey, form]);
+
   const begin = useCallback(() => {
     if (startedAt.current === null) startedAt.current = Date.now();
     if (!tracked.current) {
@@ -125,7 +161,7 @@ const LeadForm = () => {
     });
     const json = await res.json().catch(() => null);
     if (!res.ok || !json?.ok) throw new Error(json?.error ?? "Something went wrong");
-    return json as { leadId: string | null; tier?: LeadTier };
+    return json as { leadId: string | null; tier?: LeadTier; booking?: boolean };
   };
 
   const goTo = (next: number) => {
@@ -180,7 +216,17 @@ const LeadForm = () => {
       track("form_complete");
       track(tier === "nurture" ? "lead_nurture" : "lead_qualified");
       setDirection(1);
-      setResult({ tier, name: values.name, email: values.email, businessName: values.businessName });
+      setResult({
+        tier,
+        name: values.name,
+        email: values.email,
+        businessName: values.businessName,
+        booking: done.booking ?? true,
+        needs: values.services
+          .filter((s) => s !== "not-sure")
+          .map((s) => SERVICE_LABELS[s].toLowerCase())
+          .join(" and ") || "your project",
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
@@ -247,9 +293,13 @@ const LeadForm = () => {
                   tabIndex={-1}
                   className="font-display text-3xl font-extrabold leading-[1.08] tracking-[-0.03em] outline-none md:text-4xl"
                 >
-                  {STEPS[step].title}
+                  {isLast ? `What investment feels right for ${businessName?.trim() || "you"}?` : STEPS[step].title}
                 </h2>
-                <p className="mt-2 max-w-md text-base text-muted-foreground">{STEPS[step].hint}</p>
+                <p className="mt-2 max-w-md text-base text-muted-foreground">
+                  {isLast
+                    ? `You want to ${goalPhrase(goal)}. Pick the level that fits, and we can adjust it together when we talk.`
+                    : STEPS[step].hint}
+                </p>
 
                 <div className="mt-7 space-y-3">
                   {step === 0 && (
@@ -440,11 +490,13 @@ const LeadForm = () => {
                         name="budget"
                         render={({ field }) => (
                           <FormItem>
-                            <div role="radiogroup" aria-label="Investment range" className="space-y-2">
-                              {BUDGETS.map((b) => (
-                                <ChoiceTile key={b} label={BUDGET_LABELS[b]} selected={field.value === b} onSelect={() => field.onChange(b)} />
-                              ))}
-                            </div>
+                            <PricingStep
+                              tiers={tiers}
+                              value={field.value}
+                              onChange={field.onChange}
+                              guarantee={pricing.guarantee}
+                              alsoNote={alsoNote}
+                            />
                             <FormMessage />
                           </FormItem>
                         )}

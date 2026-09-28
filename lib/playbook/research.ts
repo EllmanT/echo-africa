@@ -1,4 +1,4 @@
-import { research as researchTurn, extractResearchText, extractSearchedUrls } from "./anthropic";
+import { research as researchTurn, extractResearchText, extractSearchedUrls, type CostMeter } from "./anthropic";
 import { REGION_GUIDANCE, type Pillar, type Region } from "./pillars";
 
 export type ResearchResult = {
@@ -12,7 +12,12 @@ export type ResearchResult = {
  * actually searched are handed to the writer next, so the writer can only
  * cite sources that were really retrieved.
  */
-export async function runResearch(pillar: Pillar, region: Region, recentTitles: string[]): Promise<ResearchResult> {
+export async function runResearch(
+  pillar: Pillar,
+  region: Region,
+  recentTitles: string[],
+  meter?: CostMeter
+): Promise<ResearchResult> {
   const avoidList = recentTitles.length
     ? `Do not repeat these recent Playbook topics, and pick something genuinely different:\n${recentTitles.map((t) => `- ${t}`).join("\n")}`
     : "";
@@ -29,11 +34,12 @@ Use web search to find one specific, current, real fact, statistic, news item or
 
 Then write:
 1. A single specific topic/headline idea for the post (one line).
-2. A short research summary (150 to 300 words) covering what you found, in plain English, with the source URL next to every specific number or claim.
+2. A short research summary (100 to 200 words) covering what you found, in plain English, with the source URL next to every specific number or claim.
 
 Do not invent numbers. If you cannot find a good current source, say so plainly and suggest a topic that does not depend on a specific statistic.`;
 
-  const message = await researchTurn(prompt, 4);
+  // One search: each is billed on top of the tokens (about a cent, plus the pages it pulls in), and one good source is enough for a 2 minute article.
+  const message = await researchTurn(prompt, 1, meter);
   const summary = extractResearchText(message);
   const sourceUrls = extractSearchedUrls(message);
 

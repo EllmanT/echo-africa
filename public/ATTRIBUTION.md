@@ -2,7 +2,6 @@
 
 Photos downloaded from Unsplash (owner handles licensing).
 
-- `contact/owner-laptop.jpg`: unsplash.com/photos/e8etaVo85AY
 - `contact/harare-night.jpg`: "beige city building" by Tatenda Mapigoti, unsplash.com/photos/CtqY0-G72qg
 - `playbook/get-online-1.jpg`, `playbook/get-online-2.jpg`: photos of phone use in African street/cafe settings
 - `playbook/ai-automation-1.jpg`: server room by Valentin Lacoste
@@ -14,3 +13,4 @@ Photos downloaded from Unsplash (owner handles licensing).
 - `playbook/speed-seo-2.jpg`: laptop outdoors
 - `playbook/tools-tips-1.jpg`: laptop with a photo grid open, coffee and fairy lights
 - `playbook/tools-tips-2.jpg`: laptop on a desk with decor
+- `contact/reception.jpg`: "Modern lobby with marble reception desk and plants", unsplash.com/photos/pt0nGH-NvoA

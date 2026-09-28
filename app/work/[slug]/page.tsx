@@ -9,6 +9,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FaqSection from "@/components/FaqSection";
 import Reveal from "@/components/Reveal";
 import ResultsChart from "@/components/work/ResultsChart";
+import Testimonial from "@/components/work/Testimonial";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getTestimonialFor } from "@/data/case-studies";
 import { getAllProjectSlugs, getNextProject, getPublishedProjects } from "@/lib/content/projects";
@@ -185,18 +186,7 @@ const CaseStudyPage = async ({ params }: { params: { slug: string } }) => {
           </p>
         </Reveal>
 
-        {testimonial && (
-          <Reveal delay={0.08}>
-            <figure className="mx-auto mt-14 max-w-2xl">
-              <blockquote className="font-display text-2xl font-semibold leading-snug tracking-tight md:text-3xl">
-                &ldquo;{testimonial.quote}&rdquo;
-              </blockquote>
-              <figcaption className="mt-5 text-base text-muted-foreground">
-                {testimonial.name}, {testimonial.title}
-              </figcaption>
-            </figure>
-          </Reveal>
-        )}
+        {testimonial && <Testimonial quote={testimonial.quote} name={testimonial.name} title={testimonial.title} />}
       </section>
 
       {/* Next project */}

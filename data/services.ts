@@ -183,6 +183,114 @@ export const services: Service[] = [
       },
     ],
   },
+  {
+    slug: "system-integration",
+    name: "System Integration",
+    shortDescription:
+      "We connect the tools your business already uses, like accounting, stock, WhatsApp and spreadsheets, so information moves on its own and nobody types the same thing twice.",
+    heroDescription:
+      "If your team copies the same information between systems, you are paying people to do a job software can do. We connect your existing tools so orders, invoices, stock and customer messages stay in sync, and you see the connection working before you pay.",
+    keywords: [
+      "system integration Zimbabwe",
+      "connect business systems Harare",
+      "accounting software integration Zimbabwe",
+      "WhatsApp business integration Zimbabwe",
+      "workflow automation Zimbabwe",
+    ],
+    features: [
+      {
+        title: "No more typing things twice",
+        description:
+          "When a sale, invoice or order happens in one tool, it shows up in the others on its own. Your team stops copying and pasting.",
+      },
+      {
+        title: "Works with the tools you have",
+        description:
+          "We link accounting software, stock systems, spreadsheets, email, WhatsApp and your website, so you do not have to replace anything that already works.",
+      },
+      {
+        title: "Built for real data, tested first",
+        description:
+          "We test every connection on your real examples before it goes live, so you can trust what flows between your systems.",
+      },
+      {
+        title: "Alerts if something breaks",
+        description:
+          "If a connection ever stops working, you are told straight away instead of finding out weeks later.",
+      },
+    ],
+    faqs: [
+      {
+        question: "What does system integration mean?",
+        answer:
+          "It means connecting the software you already use so they share information automatically. For example, a paid invoice can update your spreadsheet and send the customer a WhatsApp message without anyone typing anything.",
+      },
+      {
+        question: "Do I have to replace my current software?",
+        answer:
+          "In most cases, no. We work with the tools you already use and connect them. If a tool has no ready-made link, we can build a custom connection.",
+      },
+      {
+        question: "How does the zero-risk model work for integrations?",
+        answer:
+          "We build and test the connection first. You see it working on your real information, and you pay only when you are happy with it.",
+      },
+    ],
+  },
+  {
+    slug: "logo-design",
+    name: "Logo & Brand Design",
+    shortDescription:
+      "Logos and brand identities for Zimbabwean and African businesses, made for you and ready for signboards, invoices, social media and phone screens.",
+    heroDescription:
+      "Your logo is on everything your customers see. We design a logo made for your business, not a template, and prepare the files you need for print and screen. You see the ideas before you pay anything.",
+    keywords: [
+      "logo design Zimbabwe",
+      "logo designer Harare",
+      "brand identity Zimbabwe",
+      "business logo Zimbabwe",
+      "affordable logo design Harare",
+    ],
+    features: [
+      {
+        title: "Made for you, not a template",
+        description:
+          "Every logo is designed around your business, your name and the customers you want to attract.",
+      },
+      {
+        title: "Ready for print and screen",
+        description:
+          "You get files that work on a signboard, an invoice, a WhatsApp profile and a social media page, big or small.",
+      },
+      {
+        title: "Colours and lettering that fit",
+        description:
+          "We choose colours and lettering that suit your business and stay easy to read on a phone.",
+      },
+      {
+        title: "See it before you pay",
+        description:
+          "We show you the first ideas before you pay. Love it, pay. Do not, walk away.",
+      },
+    ],
+    faqs: [
+      {
+        question: "How much does a logo cost with Eka?",
+        answer:
+          "Logo projects start from about $50 for a clean, simple mark, and go up for fuller brand work with a brand guide and extra designs. You see ideas first, so there is no upfront guesswork.",
+      },
+      {
+        question: "What files do I get?",
+        answer:
+          "Files for print and screen, ready for signboards, invoices and social media. Fuller brand packages also include versions for light and dark backgrounds.",
+      },
+      {
+        question: "Can I get a logo and a website together?",
+        answer:
+          "Yes. Many clients start with a logo and then add a website that matches it. Tell us on the contact form and we will talk it through.",
+      },
+    ],
+  },
 ];
 
 export function getServiceBySlug(slug: string): Service | undefined {

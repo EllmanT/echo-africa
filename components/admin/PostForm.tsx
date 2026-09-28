@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 
+import { SCENE_NAMES } from "@/components/playbook/scenes";
 import type { AdminPost } from "@/lib/admin/posts";
 
 const inputClass =
@@ -108,7 +109,10 @@ const PostForm = ({ initial, isNew }: { initial: AdminPost | null; isNew: boolea
         <input value={coverImage} onChange={(e) => setCoverImage(e.target.value)} className={inputClass} />
       </Field>
 
-      <Field label="Content" hint="Markdown. Headings, bold, links and lists all work.">
+      <Field
+        label="Content"
+        hint={`Markdown. Headings, bold, links and lists all work. Add a drawing with <Illustration name="speed" caption="..." /> (names: ${SCENE_NAMES.join(", ")}) and a boxed summary with <Callout title="The short version"> ... </Callout>, leaving a blank line inside it. A line starting with > becomes a pull quote.`}
+      >
         <textarea
           required
           rows={16}

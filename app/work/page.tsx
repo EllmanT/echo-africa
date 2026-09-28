@@ -28,9 +28,10 @@ const WorkPage = async () => {
   const brands = caseStudies.filter((s) => s.category === "Logo & Brand Identity");
   const counts = projectCategoryCounts(caseStudies);
 
-  const categories: { label: string; count: number | null; href?: string }[] = [
-    { label: "Websites", count: counts.websites, href: "#websites" },
-    { label: "Logos and brands", count: counts.brands, href: "#brands" },
+  // "N+" reads as growing and stays true: it is always the real number of published projects.
+  const categories: { label: string; count: string | null; href?: string }[] = [
+    { label: "Web platforms", count: `${counts.websites}+`, href: "#websites" },
+    { label: "Logos and brands", count: `${counts.brands}+`, href: "#brands" },
     { label: "AI automation", count: null },
   ];
 

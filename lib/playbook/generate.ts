@@ -6,14 +6,22 @@ import { runResearch } from "./research";
 import { writeArticle } from "./write";
 import { runGuardrails } from "./guardrails";
 import { pickCoverImage } from "./images";
+import { CostMeter } from "./anthropic";
+import { hasBudget, monthlySpendUsd } from "./budget";
+import { getAdminSettings } from "@/lib/admin/settings";
 
 export type GenerateResult = {
-  status: "published" | "draft" | "failed";
+  status: "published" | "draft" | "failed" | "skipped";
   slug?: string;
   reasons?: string[];
   flags?: string[];
   error?: string;
   jobRunId: string;
+  /** What this run cost, in USD, from the API usage numbers. */
+  costUsd?: number;
+  /** Spent so far this month (including this run) and the monthly ceiling. */
+  monthSpentUsd?: number;
+  monthBudgetUsd?: number;
 };
 
 function slugify(title: string): string {
@@ -45,15 +53,42 @@ async function uniqueSlug(base: string, db: Awaited<ReturnType<typeof requireDb>
 export async function generateArticle(slot: string): Promise<GenerateResult> {
   const db = await requireDb();
   const jobRuns = db.collection("jobRuns");
+
+  // Hard monthly ceiling, checked before a single cent is spent. Applies to the schedule and to "Generate now".
+  const [{ monthlyBudgetUsd }, spentBefore] = await Promise.all([getAdminSettings(), monthlySpendUsd()]);
+  if (!hasBudget(spentBefore, monthlyBudgetUsd)) {
+    return {
+      status: "skipped",
+      error: `Monthly budget reached ($${spentBefore.toFixed(2)} of $${monthlyBudgetUsd.toFixed(2)}). Raise it in Settings to write more this month.`,
+      jobRunId: "",
+      monthSpentUsd: spentBefore,
+      monthBudgetUsd: monthlyBudgetUsd,
+    };
+  }
+
+  const meter = new CostMeter();
   const startedAt = new Date();
   const jobRunId = (await jobRuns.insertOne({ slot, status: "running", startedAt })).insertedId.toString();
+
+  // Whatever happens, record what this run really cost so the monthly total stays honest.
+  const cost = () => ({
+    costUsd: Number(meter.usd.toFixed(5)),
+    searches: meter.searches,
+    inputTokens: meter.inputTokens,
+    outputTokens: meter.outputTokens,
+  });
+  const money = () => ({
+    costUsd: Number(meter.usd.toFixed(5)),
+    monthSpentUsd: spentBefore + meter.usd,
+    monthBudgetUsd: monthlyBudgetUsd,
+  });
 
   const fail = async (error: string): Promise<GenerateResult> => {
     await jobRuns.updateOne(
       { _id: new ObjectId(jobRunId) },
-      { $set: { status: "failed", error, finishedAt: new Date() } }
+      { $set: { status: "failed", error, finishedAt: new Date(), ...cost() } }
     );
-    return { status: "failed", error, jobRunId };
+    return { status: "failed", error, jobRunId, ...money() };
   };
 
   try {
@@ -75,14 +110,14 @@ export async function generateArticle(slot: string): Promise<GenerateResult> {
 
     let researchResult;
     try {
-      researchResult = await runResearch(pillar, region, recentTitles);
+      researchResult = await runResearch(pillar, region, recentTitles, meter);
     } catch (error) {
       return fail(`Research step failed: ${error instanceof Error ? error.message : error}`);
     }
 
     let draft;
     try {
-      draft = await writeArticle(pillar, region, researchResult);
+      draft = await writeArticle(pillar, region, researchResult, meter);
     } catch (error) {
       return fail(`Writing step failed: ${error instanceof Error ? error.message : error}`);
     }
@@ -128,11 +163,19 @@ export async function generateArticle(slot: string): Promise<GenerateResult> {
           reasons: guardrailResult.reasons,
           flags: guardrailResult.flags,
           finishedAt: new Date(),
+          ...cost(),
         },
       }
     );
 
-    return { status: published ? "published" : "draft", slug, reasons: guardrailResult.reasons, flags: guardrailResult.flags, jobRunId };
+    return {
+      status: published ? "published" : "draft",
+      slug,
+      reasons: guardrailResult.reasons,
+      flags: guardrailResult.flags,
+      jobRunId,
+      ...money(),
+    };
   } catch (error) {
     return fail(error instanceof Error ? error.message : String(error));
   }

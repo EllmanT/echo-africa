@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-/** Called by GitHub Actions 3x a day. Never touched directly by a browser. */
+/** Called by GitHub Actions once a day. Never touched directly by a browser. */
 export async function POST(request: Request) {
   const auth = request.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   const settings = await getAdminSettings();
-  const cap = settings.dailyGenerationCap ?? 3;
+  const cap = settings.dailyGenerationCap ?? 1;
   const doneToday = await countPublishedToday();
   if (doneToday >= cap) {
     return NextResponse.json({ ok: true, skipped: true, reason: `Daily cap of ${cap} already reached (${doneToday} published today)` });

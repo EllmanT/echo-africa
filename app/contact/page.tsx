@@ -9,6 +9,10 @@ import LeadForm from "@/components/funnel/LeadForm";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 import { getFaqsForPage } from "@/lib/content/faqs";
+import { getPricingConfig } from "@/lib/content/pricing";
+
+// Prices are edited in the admin, so re-check them every minute (the admin also revalidates on save).
+export const revalidate = 60;
 
 export const metadata: Metadata = buildMetadata({
   title: "Start Your Project: Website, Logo or AI Automation",
@@ -20,8 +24,8 @@ export const metadata: Metadata = buildMetadata({
 
 const NEXT_STEPS = [
   {
-    title: "You send this form",
-    body: "It takes about two minutes. You only answer what we need to understand your project.",
+    title: "You tell us what you need",
+    body: "About two minutes. You pick the level that fits, and we tailor it to your business.",
   },
   {
     title: "You hear from us straight away",
@@ -34,7 +38,7 @@ const NEXT_STEPS = [
 ];
 
 const ContactPage = async () => {
-  const faqs = await getFaqsForPage("contact");
+  const [faqs, pricing] = await Promise.all([getFaqsForPage("contact"), getPricingConfig()]);
   return (
     <PageShell>
       <Breadcrumbs items={[{ name: "Contact", path: "/contact" }]} />
@@ -69,27 +73,32 @@ const ContactPage = async () => {
 
       <section className="mx-auto grid max-w-6xl gap-14 py-16 md:py-24 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-20">
         <div className="relative">
-          <LeadForm />
+          <LeadForm pricing={pricing} />
         </div>
 
         <aside className="lg:sticky lg:top-28 lg:self-start">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-black/[0.06] bg-muted">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-neutral-900 lg:aspect-[4/4.4]">
             <Image
-              src="/images/contact/owner-laptop.jpg"
-              alt="A business owner working on a laptop in a bright office"
+              src="/images/contact/reception.jpg"
+              alt="A warm, modern reception with a marble desk, timber wall and pendant lights"
               fill
               sizes="(min-width: 1024px) 400px, 100vw"
               className="object-cover"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+            <p className="absolute inset-x-6 bottom-6 font-display text-xl font-bold leading-snug tracking-tight text-white md:text-2xl">
+              Every request is read by the founder, personally.
+            </p>
           </div>
 
           <h2 className="mt-10 font-display text-2xl font-bold tracking-tight">What happens next</h2>
-          <ol className="mt-5 space-y-6">
+          <ol className="relative mt-6 space-y-7">
+            <span aria-hidden="true" className="absolute bottom-4 left-4 top-4 w-px bg-purple/20" />
             {NEXT_STEPS.map((s, i) => (
-              <li key={s.title} className="flex gap-4">
+              <li key={s.title} className="relative flex gap-4">
                 <span
                   aria-hidden="true"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple/10 font-display text-sm font-bold text-purple"
+                  className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white font-display text-sm font-bold text-purple ring-1 ring-purple/30"
                 >
                   {i + 1}
                 </span>

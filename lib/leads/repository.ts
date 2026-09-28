@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 
-import { getDb, requireDb } from "@/lib/db/mongodb";
-import { DEFAULT_SCORE_SETTINGS, type ScoreSettings } from "./score";
+import { requireDb } from "@/lib/db/mongodb";
 import type { LeadInput } from "./schema";
 import type { LeadStatus, LeadTier } from "./types";
 
@@ -10,6 +9,13 @@ export type LeadDoc = Partial<LeadInput> & {
   status: LeadStatus;
   tier?: LeadTier;
   score?: number;
+  /** Snapshot of the chosen price range as the visitor saw it, so later admin edits do not rewrite history. */
+  budgetLabel?: string;
+  budgetMinUsd?: number;
+  /** Which ladder they were shown: "standard" or "logo". */
+  budgetSet?: string;
+  /** Name of the tier they chose, for example "Growth". */
+  budgetTierName?: string;
   source?: string;
   notes?: string;
   internalNotes?: string;
@@ -21,19 +27,6 @@ export type LeadDoc = Partial<LeadInput> & {
   updatedAt: Date;
   completedAt?: Date;
 };
-
-export async function getScoreSettings(): Promise<ScoreSettings> {
-  try {
-    const db = await getDb();
-    const doc = await db?.collection("settings").findOne({ _id: "leads" as unknown as ObjectId });
-    if (doc && typeof doc.budgetFloor === "number" && typeof doc.priorityBudget === "number") {
-      return { budgetFloor: doc.budgetFloor, priorityBudget: doc.priorityBudget };
-    }
-  } catch {
-    // Fall through to defaults: settings must never block a lead.
-  }
-  return DEFAULT_SCORE_SETTINGS;
-}
 
 function toObjectId(id?: string): ObjectId | null {
   return id && ObjectId.isValid(id) ? new ObjectId(id) : null;

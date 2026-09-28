@@ -1,6 +1,5 @@
 import { siteConfig } from "@/lib/seo/site";
 import {
-  BUDGET_LABELS,
   GOAL_LABELS,
   ROLE_LABELS,
   SERVICE_LABELS,
@@ -51,20 +50,37 @@ export const checklistUrl = () => `${siteConfig.url}/resources/launch-checklist`
 export const playbookUrl = () => `${siteConfig.url}/playbook`;
 
 /** The instant "we got you" email sent to the lead. */
-export function leadConfirmationEmail(lead: LeadInput, tier: LeadTier, leadId?: string): Mail {
+export type ConfirmationOptions = {
+  leadId?: string;
+  /** Whether to offer the Cal.com call. False for small logo jobs, which are handled on WhatsApp and email. */
+  booking: boolean;
+  budgetLabel: string;
+  tierName: string;
+};
+
+export function leadConfirmationEmail(lead: LeadInput, tier: LeadTier, opts: ConfirmationOptions): Mail {
+  const { leadId, booking } = opts;
   const first = escapeHtml(firstName(lead.name));
   const business = escapeHtml(lead.businessName);
   const qualified = tier !== "nurture";
+  const needs = lead.services.map((s) => SERVICE_LABELS[s].toLowerCase()).join(" and ");
+  const plan = `${opts.tierName} (${opts.budgetLabel})`;
 
   if (qualified) {
-    const subject = `Got it, ${firstName(lead.name)}. Let's book your call`;
+    const subject = booking
+      ? `Got it, ${firstName(lead.name)}. Let's book your call`
+      : `Got it, ${firstName(lead.name)}. I'll message you soon`;
+    const nextStep = booking
+      ? `Next step: pick a time that suits you and we'll talk it through.`
+      : `Next step: I'll message you on WhatsApp or email to talk through your ${needs}.`;
     const text = [
       `Hi ${firstName(lead.name)},`,
       ``,
       `Thanks for telling me about ${lead.businessName}. I read every request myself.`,
+      `You asked about ${needs}, and the range that feels right is ${plan}.`,
       ``,
-      `Next step: pick a time that suits you and we'll talk it through.`,
-      `Book a call: ${siteConfig.calUrl}`,
+      nextStep,
+      ...(booking ? [`Book a call: ${siteConfig.calUrl}`] : []),
       ``,
       `Prefer WhatsApp? Message me on ${siteConfig.whatsappDisplay}.`,
       ``,
@@ -80,8 +96,13 @@ export function leadConfirmationEmail(lead: LeadInput, tier: LeadTier, leadId?: 
     const html = layout(`
 <p style="margin:0 0 14px;">Hi ${first},</p>
 <p style="margin:0 0 14px;">Thanks for telling me about <strong>${business}</strong>. I read every request myself.</p>
-<p style="margin:0 0 20px;"><strong>Next step:</strong> pick a time that suits you and we'll talk it through.</p>
-<p style="margin:0 0 20px;">${button(siteConfig.calUrl, "Book your call")}</p>
+<p style="margin:0 0 14px;">You asked about ${escapeHtml(needs)}, and the range that feels right is <strong>${escapeHtml(plan)}</strong>.</p>
+${
+  booking
+    ? `<p style="margin:0 0 20px;"><strong>Next step:</strong> pick a time that suits you and we'll talk it through.</p>
+<p style="margin:0 0 20px;">${button(siteConfig.calUrl, "Book your call")}</p>`
+    : `<p style="margin:0 0 20px;"><strong>Next step:</strong> I'll message you on WhatsApp or email to talk through your ${escapeHtml(needs)}.</p>`
+}
 <p style="margin:0 0 14px;">Prefer WhatsApp? Message me on <a href="${whatsappLink(`Hi Tapiwa, it's ${lead.name} from ${lead.businessName}.`)}" style="color:${PURPLE};">${siteConfig.whatsappDisplay}</a>.</p>
 <p style="margin:0 0 14px;">While you wait, this is worth 5 minutes: the <a href="${checklistUrl()}" style="color:${PURPLE};">Website Launch Checklist</a> for Zimbabwean businesses.</p>
 <p style="margin:0 0 20px;">Remember how we work: we build it first, and you pay only when you love it.</p>
@@ -122,10 +143,16 @@ export function leadConfirmationEmail(lead: LeadInput, tier: LeadTier, leadId?: 
 }
 
 /** Notification to the owner with everything the lead told us. */
-export function ownerNotificationEmail(lead: LeadInput, tier: LeadTier, score: number, notifyEmail?: string): Mail {
+export function ownerNotificationEmail(
+  lead: LeadInput,
+  tier: LeadTier,
+  score: number,
+  budget: string,
+  notifyEmail?: string
+): Mail {
   const to = notifyEmail || process.env.LEAD_NOTIFY_EMAIL || siteConfig.email;
   const tag = tier === "priority" ? "PRIORITY" : tier === "qualified" ? "QUALIFIED" : "NURTURE";
-  const subject = `[${tag}] ${lead.businessName}, ${BUDGET_LABELS[lead.budget]}`;
+  const subject = `[${tag}] ${lead.businessName}, ${budget}`;
 
   const rows: [string, string][] = [
     ["Name", lead.name],
@@ -138,7 +165,7 @@ export function ownerNotificationEmail(lead: LeadInput, tier: LeadTier, score: n
     ["Needs", lead.services.map((s) => SERVICE_LABELS[s]).join(", ")],
     ["Main goal", GOAL_LABELS[lead.goal]],
     ["Timing", TIMING_LABELS[lead.timing]],
-    ["Budget", BUDGET_LABELS[lead.budget]],
+    ["Budget", budget],
     ["Notes", lead.notes || "None"],
     ["Score", `${score} / 100`],
   ];

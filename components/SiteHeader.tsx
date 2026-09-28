@@ -62,12 +62,17 @@ const NavLink = ({
         className
       )}
     >
-      {item.name}
-      {item.highlight && (
-        <span className="rounded-full bg-purple/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple">
-          Free
-        </span>
-      )}
+      <span className="relative">
+        {item.name}
+        {item.highlight && (
+          <span
+            aria-label="free"
+            className="pointer-events-none absolute -right-[1.35rem] -top-2 rounded-full bg-purple px-1.5 py-[2px] text-[9px] font-bold uppercase leading-none tracking-wider text-white"
+          >
+            Free
+          </span>
+        )}
+      </span>
     </Link>
   );
 };

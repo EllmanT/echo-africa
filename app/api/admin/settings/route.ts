@@ -7,10 +7,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
-  budgetFloor: z.number().min(0).max(100000),
-  priorityBudget: z.number().min(0).max(100000),
   notifyEmail: z.string().email(),
   dailyGenerationCap: z.number().int().min(0).max(20),
+  monthlyBudgetUsd: z.number().min(0).max(500),
 });
 
 export async function PUT(request: Request) {

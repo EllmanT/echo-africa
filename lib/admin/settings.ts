@@ -1,12 +1,12 @@
 import { getDb, requireDb } from "@/lib/db/mongodb";
-import { DEFAULT_SCORE_SETTINGS } from "@/lib/leads/score";
+import { DEFAULT_MONTHLY_BUDGET_USD } from "@/lib/playbook/budget";
 
 export type AdminSettings = {
-  budgetFloor: number;
-  priorityBudget: number;
   notifyEmail: string;
   /** Stops the automated Playbook pipeline after this many published articles in a day. */
   dailyGenerationCap: number;
+  /** Hard monthly ceiling for the article engine, in USD. Once the month's real spend reaches it, no more articles are written until next month. */
+  monthlyBudgetUsd: number;
 };
 
 type SettingsDoc = { _id: string; [key: string]: unknown };
@@ -20,14 +20,13 @@ export async function getAdminSettings(): Promise<AdminSettings> {
   ]);
 
   return {
-    budgetFloor: typeof scoreDoc?.budgetFloor === "number" ? scoreDoc.budgetFloor : DEFAULT_SCORE_SETTINGS.budgetFloor,
-    priorityBudget:
-      typeof scoreDoc?.priorityBudget === "number" ? scoreDoc.priorityBudget : DEFAULT_SCORE_SETTINGS.priorityBudget,
     notifyEmail:
       typeof notifyDoc?.notifyEmail === "string" && notifyDoc.notifyEmail
         ? notifyDoc.notifyEmail
         : (process.env.LEAD_NOTIFY_EMAIL ?? ""),
-    dailyGenerationCap: typeof scoreDoc?.dailyGenerationCap === "number" ? scoreDoc.dailyGenerationCap : 3,
+    dailyGenerationCap: typeof scoreDoc?.dailyGenerationCap === "number" ? scoreDoc.dailyGenerationCap : 1,
+    monthlyBudgetUsd:
+      typeof scoreDoc?.monthlyBudgetUsd === "number" ? scoreDoc.monthlyBudgetUsd : DEFAULT_MONTHLY_BUDGET_USD,
   };
 }
 
@@ -39,9 +38,8 @@ export async function saveAdminSettings(input: AdminSettings): Promise<void> {
       { _id: "leads" },
       {
         $set: {
-          budgetFloor: input.budgetFloor,
-          priorityBudget: input.priorityBudget,
           dailyGenerationCap: input.dailyGenerationCap,
+          monthlyBudgetUsd: input.monthlyBudgetUsd,
         },
       },
       { upsert: true }

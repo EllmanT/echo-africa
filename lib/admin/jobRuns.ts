@@ -10,6 +10,9 @@ export type JobRun = {
   reasons?: string[];
   flags?: string[];
   error?: string;
+  /** Real cost of this run in USD, from the API usage numbers. */
+  costUsd?: number;
+  searches?: number;
   startedAt: Date;
   finishedAt?: Date;
 };

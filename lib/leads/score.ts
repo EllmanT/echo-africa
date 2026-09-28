@@ -1,9 +1,8 @@
-import type { Budget, LeadTier, Role, Service, Timing } from "./types";
-import { BUDGET_MIN_USD } from "./types";
+import type { LeadTier, Role, Service, Timing } from "./types";
+import type { PricingTier } from "./pricing";
 
 export type ScoreInput = {
   services: Service[];
-  budget: Budget;
   timing: Timing;
   role: Role;
   businessName?: string;
@@ -11,25 +10,22 @@ export type ScoreInput = {
   website?: string;
 };
 
-export type ScoreSettings = {
-  /** Minimum budget in USD to count as qualified. */
-  budgetFloor: number;
-  /** Minimum budget in USD (and a score of 70) to count as priority. */
-  priorityBudget: number;
-};
+/** The tier the visitor picked, plus where it sits in its ladder. Null when the key is unknown. */
+export type ScoredTier = {
+  tier: Pick<PricingTier, "qualified" | "priorityScore">;
+  position: number;
+  count: number;
+} | null;
 
-export const DEFAULT_SCORE_SETTINGS: ScoreSettings = {
-  budgetFloor: 500,
-  priorityBudget: 2000,
-};
-
-const BUDGET_POINTS: Record<Budget, number> = {
-  "under-500": 0,
-  "500-1000": 20,
-  "1000-2500": 30,
-  "2500-5000": 36,
-  "5000-plus": 40,
-};
+/**
+ * Budget points depend on the tier's position, not its dollar amount, so a logo-only lead
+ * who picks the top logo tier scores like any other lead at the top of their ladder.
+ * Bottom tier 20, top tier 40, evenly spaced between.
+ */
+function budgetPoints(position: number, count: number): number {
+  if (count <= 1) return 30;
+  return Math.round(20 + (position * 20) / (count - 1));
+}
 
 const TIMING_POINTS: Record<Timing, number> = {
   asap: 20,
@@ -44,11 +40,8 @@ const ROLE_POINTS: Record<Role, number> = {
   "gathering-info": 3,
 };
 
-export function scoreLead(
-  input: ScoreInput,
-  settings: ScoreSettings = DEFAULT_SCORE_SETTINGS
-): { score: number; tier: LeadTier } {
-  let score = BUDGET_POINTS[input.budget] + TIMING_POINTS[input.timing] + ROLE_POINTS[input.role];
+export function scoreLead(input: ScoreInput, picked: ScoredTier): { score: number; tier: LeadTier } {
+  let score = (picked ? budgetPoints(picked.position, picked.count) : 0) + TIMING_POINTS[input.timing] + ROLE_POINTS[input.role];
 
   // Service fit: they know what they want and it is something we sell.
   const concrete = input.services.filter((s) => s !== "not-sure");
@@ -59,10 +52,9 @@ export function scoreLead(
   if ((input.businessDescription?.trim().length ?? 0) >= 20) score += 4;
   if (input.website?.trim()) score += 3;
 
-  const budgetUsd = BUDGET_MIN_USD[input.budget];
   let tier: LeadTier = "nurture";
-  if (budgetUsd >= settings.budgetFloor) tier = "qualified";
-  if (budgetUsd >= settings.priorityBudget && score >= 70) tier = "priority";
+  if (picked?.tier.qualified) tier = "qualified";
+  if (picked?.tier.qualified && picked.tier.priorityScore !== null && score >= picked.tier.priorityScore) tier = "priority";
 
   return { score, tier };
 }

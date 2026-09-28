@@ -10,7 +10,8 @@
     "deploy": "vercel --prod",
     "test": "vitest run",
     "check:dashes": "node scripts/check-dashes.mjs",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "backfill": "tsx scripts/backfill-playbook.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

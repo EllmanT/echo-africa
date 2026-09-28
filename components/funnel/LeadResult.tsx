@@ -16,11 +16,17 @@ const LeadResult = ({
   name,
   email,
   businessName,
+  booking,
+  needs,
 }: {
   tier: LeadTier;
   name: string;
   email: string;
   businessName: string;
+  /** Show the calendar. Off for small jobs that are handled on WhatsApp and email. */
+  booking: boolean;
+  /** What they asked for, in plain words, for example "a logo and brand". */
+  needs: string;
 }) => {
   const first = firstName(name);
 
@@ -63,6 +69,42 @@ const LeadResult = ({
         </ul>
         <p className="mt-6 text-sm text-muted-foreground">
           When your budget grows, come back. The offer stays the same: we build it first, and you pay only when you love it.
+        </p>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    const wa = waHref(`Hi Tapiwa, it's ${name} from ${businessName}. I just sent my request on eka.dev.`);
+    return (
+      <div aria-live="polite">
+        <h2 className="font-display text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] md:text-5xl">
+          Got it, {first}. <span className="text-purple">I&apos;ll be in touch.</span>
+        </h2>
+        <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+          I&apos;ve read your request for {needs} for {businessName}. I&apos;ll message you on WhatsApp or email to take it
+          from here, and I&apos;ve sent a confirmation to {email}.
+        </p>
+        <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <a
+            href={wa}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track("whatsapp_click")}
+            className="inline-flex h-12 items-center gap-2 rounded-full bg-foreground px-7 text-base font-medium text-background transition-[background-color,transform] duration-200 ease-out-strong hover:bg-purple active:scale-[0.97]"
+          >
+            <FaWhatsapp size={18} />
+            Say hello on WhatsApp
+          </a>
+          <Link
+            href="/work"
+            className="text-sm text-muted-foreground underline underline-offset-4 hover:text-purple"
+          >
+            See our work while you wait
+          </Link>
+        </div>
+        <p className="mt-6 text-sm text-muted-foreground">
+          Remember how we work: we build it first, and you pay only when you love it.
         </p>
       </div>
     );

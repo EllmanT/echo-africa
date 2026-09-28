@@ -2,6 +2,7 @@ export const SERVICES = [
   "website",
   "logo",
   "ai-automation",
+  "system-integration",
   "custom-software",
   "not-sure",
 ] as const;
@@ -11,18 +12,10 @@ export const SERVICE_LABELS: Record<Service, string> = {
   website: "A website",
   logo: "A logo and brand",
   "ai-automation": "AI automation",
+  "system-integration": "System integration",
   "custom-software": "Custom software",
   "not-sure": "Not sure yet",
 };
-
-export const BUDGETS = [
-  "under-500",
-  "500-1000",
-  "1000-2500",
-  "2500-5000",
-  "5000-plus",
-] as const;
-export type Budget = (typeof BUDGETS)[number];
 
 export const TIMINGS = ["asap", "one-month", "three-months", "exploring"] as const;
 export type Timing = (typeof TIMINGS)[number];
@@ -73,7 +66,11 @@ export const LEAD_STATUSES = [
 ] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
-export const BUDGET_LABELS: Record<Budget, string> = {
+/**
+ * Budgets are now tiers edited in the admin (see pricing.ts), so a lead stores the tier key
+ * plus a label snapshot. These labels only cover leads saved before tiers existed.
+ */
+export const LEGACY_BUDGET_LABELS: Record<string, string> = {
   "under-500": "Under $500",
   "500-1000": "$500 to $1,000",
   "1000-2500": "$1,000 to $2,500",
@@ -81,11 +78,6 @@ export const BUDGET_LABELS: Record<Budget, string> = {
   "5000-plus": "$5,000 or more",
 };
 
-/** Lower bound of each range in USD, used for the floor and priority checks. */
-export const BUDGET_MIN_USD: Record<Budget, number> = {
-  "under-500": 0,
-  "500-1000": 500,
-  "1000-2500": 1000,
-  "2500-5000": 2500,
-  "5000-plus": 5000,
-};
+/** What to show for a saved lead's budget: the snapshot, else a legacy label, else the raw key. */
+export const budgetDisplay = (lead: { budget?: string; budgetLabel?: string }): string =>
+  lead.budgetLabel || (lead.budget ? (LEGACY_BUDGET_LABELS[lead.budget] ?? lead.budget) : "-");

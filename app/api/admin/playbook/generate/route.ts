@@ -7,12 +7,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-/** The admin "Generate now" button. Ignores the daily cap: the owner asked for it on purpose. */
+/** The admin "Generate now" button. Ignores the daily cap (the owner asked for it on purpose) but not the monthly budget. */
 export async function POST() {
   const result = await generateArticle("manual");
   if (result.status === "published") {
     revalidatePath("/playbook");
     revalidatePath(`/playbook/${result.slug}`);
   }
-  return NextResponse.json({ ok: result.status !== "failed", ...result });
+  return NextResponse.json({ ok: result.status !== "failed" && result.status !== "skipped", ...result });
 }

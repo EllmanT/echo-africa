@@ -2,7 +2,7 @@ import { ObjectId, type Filter } from "mongodb";
 
 import { getDb, requireDb } from "@/lib/db/mongodb";
 import type { LeadDoc } from "@/lib/leads/repository";
-import { LEAD_STATUSES } from "@/lib/leads/types";
+import { LEAD_STATUSES, budgetDisplay } from "@/lib/leads/types";
 
 export type AdminLead = LeadDoc & { _id: string };
 
@@ -81,7 +81,7 @@ export function leadsToCsv(leads: AdminLead[]): string {
       l.whatsapp ?? "",
       l.businessName ?? "",
       (l.services ?? []).join("|"),
-      l.budget ?? "",
+      budgetDisplay(l),
       l.timing ?? "",
       l.role ?? "",
       l.goal ?? "",

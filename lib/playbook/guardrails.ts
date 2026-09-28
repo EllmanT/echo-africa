@@ -1,3 +1,6 @@
+import { SCENE_NAMES } from "@/components/playbook/scenes";
+import { ALLOWED_MDX_TAGS } from "@/components/playbook/mdx-tags";
+import { countWords } from "./readingTime";
 import type { DraftArticle } from "./write";
 
 export type GuardrailResult = {
@@ -17,10 +20,6 @@ const BANNED_PHRASES = [
   "act now or",
   "limited time only",
 ];
-
-function wordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
 
 function normalizeTitle(title: string): Set<string> {
   return new Set(
@@ -75,13 +74,33 @@ export async function runGuardrails(
     reasons.push("Contains an em dash or en dash character");
   }
 
-  const words = wordCount(draft.content);
-  if (words < 300) reasons.push(`Too short: ${words} words`);
-  if (words > 1400) reasons.push(`Too long: ${words} words`);
+  // Articles are meant to be a quick read of about two minutes.
+  const words = countWords(draft.content);
+  if (words < 250) reasons.push(`Too short: ${words} words`);
+  if (words > 900) reasons.push(`Too long for a quick read: ${words} words`);
+
+  // Only the tags the article page knows how to draw.
+  const tags = Array.from(draft.content.matchAll(/<\/?([A-Za-z][\w-]*)/g)).map((m) => m[1]);
+  for (const tag of tags) {
+    if (!(ALLOWED_MDX_TAGS as readonly string[]).includes(tag)) reasons.push(`Uses a tag the site cannot draw: <${tag}>`);
+  }
+  for (const m of Array.from(draft.content.matchAll(/<Illustration\s+name="([^"]*)"/g))) {
+    if (!(SCENE_NAMES as string[]).includes(m[1])) reasons.push(`Unknown illustration name: "${m[1]}"`);
+  }
+  if (!/<Illustration\s/.test(draft.content)) flags.push("No illustrations in the article");
+
+  // If it does not compile as MDX, the page would crash. Catch it here instead.
+  try {
+    // Loaded on demand: @mdx-js/mdx is ESM only, which the CommonJS backfill script cannot import statically.
+    const { compile } = await import("@mdx-js/mdx");
+    await compile(draft.content);
+  } catch (error) {
+    reasons.push(`Article text does not compile: ${error instanceof Error ? error.message.split("\n")[0] : "unknown error"}`);
+  }
 
   const sentences = draft.content.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
   const avgSentenceLength = sentences.length ? words / sentences.length : 0;
-  if (avgSentenceLength > 28) flags.push(`Long average sentence length (${avgSentenceLength.toFixed(1)} words)`);
+  if (avgSentenceLength > 18) flags.push(`Long average sentence length (${avgSentenceLength.toFixed(1)} words)`);
 
   const lowerText = fullText.toLowerCase();
   for (const phrase of BANNED_PHRASES) {

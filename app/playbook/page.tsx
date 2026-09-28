@@ -7,6 +7,8 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import Reveal from "@/components/Reveal";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getAllPublishedPosts } from "@/lib/content/posts";
+import { fallbackCover } from "@/lib/playbook/images";
+import { readingMinutes } from "@/lib/playbook/readingTime";
 
 export const revalidate = 60;
 
@@ -50,19 +52,19 @@ const PlaybookIndexPage = async () => {
         <div className="animate-rise" style={{ animationDelay: "100ms" }}>
           <Link href={`/playbook/${featured.slug}`} className="group grid gap-6 pb-16 md:grid-cols-2 md:items-center md:gap-12 md:pb-24">
             <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] border border-black/[0.06] bg-muted">
-              {featured.coverImage && (
-                <Image
-                  src={featured.coverImage}
-                  alt={featured.title}
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover transition-transform duration-500 ease-out-strong group-hover:scale-[1.03]"
-                />
-              )}
+              <Image
+                src={featured.coverImage ?? fallbackCover(featured.slug, featured.tags)}
+                alt=""
+                fill
+                priority
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover transition-transform duration-500 ease-out-strong group-hover:scale-[1.03]"
+              />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{formatDate(featured.date)}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatDate(featured.date)} <span aria-hidden="true">&middot;</span> {readingMinutes(featured.content)} min read
+              </p>
               <h2 className="mt-3 font-display text-3xl font-bold leading-[1.1] tracking-[-0.02em] transition-colors group-hover:text-purple md:text-4xl">
                 {featured.title}
               </h2>
@@ -78,17 +80,17 @@ const PlaybookIndexPage = async () => {
             <Reveal key={post.slug}>
               <Link href={`/playbook/${post.slug}`} className="group block">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-black/[0.06] bg-muted">
-                  {post.coverImage && (
-                    <Image
-                      src={post.coverImage}
-                      alt={post.title}
-                      fill
-                      sizes="(min-width: 768px) 33vw, 100vw"
-                      className="object-cover transition-transform duration-500 ease-out-strong group-hover:scale-[1.04]"
-                    />
-                  )}
+                  <Image
+                    src={post.coverImage ?? fallbackCover(post.slug, post.tags)}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover transition-transform duration-500 ease-out-strong group-hover:scale-[1.04]"
+                  />
                 </div>
-                <p className="mt-4 text-xs text-muted-foreground">{formatDate(post.date)}</p>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  {formatDate(post.date)} <span aria-hidden="true">&middot;</span> {readingMinutes(post.content)} min read
+                </p>
                 <h3 className="mt-1.5 font-display text-lg font-bold leading-snug tracking-tight transition-colors group-hover:text-purple">
                   {post.title}
                 </h3>

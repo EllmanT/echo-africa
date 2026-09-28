@@ -22,3 +22,27 @@ export function pickCoverImage(pillarKey: string, recentImagesUsed: string[]): s
   const from = fresh.length ? fresh : options;
   return from[Math.floor(Math.random() * from.length)];
 }
+
+/**
+ * A cover for a post that has none, chosen by its slug so the same post always gets the same
+ * picture and the Playbook never shows an empty grey box.
+ */
+export function fallbackCover(slug: string, tags: string[] = []): string {
+  const text = `${slug} ${tags.join(" ")}`.toLowerCase();
+  const pillar =
+    /speed|seo|google|rank|search/.test(text)
+      ? "speed-seo"
+      : /ai|automat|whatsapp|bot/.test(text)
+        ? "ai-automation"
+        : /news|report|trend/.test(text)
+          ? "news-translated"
+          : /teardown|case/.test(text)
+            ? "case-teardown"
+            : /tool|tip/.test(text)
+              ? "tools-tips"
+              : "get-online";
+  const options = POOL[pillar] ?? ALL_IMAGES;
+  let hash = 0;
+  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return options[hash % options.length];
+}

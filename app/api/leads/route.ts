@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 import { leadRequestSchema } from "@/lib/leads/schema";
 import { scoreLead } from "@/lib/leads/score";
-import { getScoreSettings, recordEmail, upsertLead } from "@/lib/leads/repository";
+import { findTier, formatRange } from "@/lib/leads/pricing";
+import { recordEmail, upsertLead } from "@/lib/leads/repository";
+import { getPricingConfig } from "@/lib/content/pricing";
 import { getAdminSettings } from "@/lib/admin/settings";
 import { leadConfirmationEmail, ownerNotificationEmail } from "@/lib/email/templates";
 import { sendMail } from "@/lib/email/send";
@@ -56,8 +58,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, leadId: null, tier: "nurture" });
   }
 
-  const [scoreSettings, adminSettings] = await Promise.all([getScoreSettings(), getAdminSettings()]);
-  const { score, tier } = scoreLead(req.data, scoreSettings);
+  const [pricing, adminSettings] = await Promise.all([getPricingConfig(), getAdminSettings()]);
+
+  // The chosen range must be one of the tiers this visitor was actually offered.
+  const picked = findTier(pricing, req.data.services, req.data.budget);
+  if (!picked) {
+    return NextResponse.json(
+      { ok: false, error: "That price range is no longer available. Please go back and pick again." },
+      { status: 400 }
+    );
+  }
+  const budgetLabel = formatRange(picked.tier);
+  const booking = picked.tier.qualified && picked.tier.booking;
+  const { score, tier } = scoreLead(req.data, picked);
 
   let leadId: string | null = null;
   try {
@@ -66,6 +79,10 @@ export async function POST(request: Request) {
       status: tier === "nurture" ? "nurture" : "new",
       tier,
       score,
+      budgetLabel,
+      budgetMinUsd: picked.tier.minUsd,
+      budgetSet: picked.set,
+      budgetTierName: picked.tier.name,
       source: req.source,
       completedAt: new Date(),
     });
@@ -75,8 +92,8 @@ export async function POST(request: Request) {
   }
 
   const [ownerOk, leadOk] = await Promise.all([
-    sendMail(ownerNotificationEmail(req.data, tier, score, adminSettings.notifyEmail)),
-    sendMail(leadConfirmationEmail(req.data, tier, leadId ?? undefined)),
+    sendMail(ownerNotificationEmail(req.data, tier, score, `${picked.tier.name}, ${budgetLabel}`, adminSettings.notifyEmail)),
+    sendMail(leadConfirmationEmail(req.data, tier, { leadId: leadId ?? undefined, booking, budgetLabel, tierName: picked.tier.name })),
   ]);
 
   if (leadId) {
@@ -86,5 +103,5 @@ export async function POST(request: Request) {
     ]);
   }
 
-  return NextResponse.json({ ok: true, leadId, tier });
+  return NextResponse.json({ ok: true, leadId, tier, booking });
 }

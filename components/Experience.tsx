@@ -24,17 +24,17 @@ const Experience = () => {
             }}
             className="flex-1 text-black border-neutral-200"
           >
-            <div className="flex lg:flex-row flex-col lg:items-center p-3 py-6 md:p-5 lg:p-10 gap-2">
+            <div className="flex flex-col items-center gap-3 p-3 py-6 text-center md:p-5 lg:p-8">
               <img
                 src={card.thumbnail}
                 alt=""
-                className="lg:w-32 md:w-20 w-16"
+                className="h-16 w-16 object-contain lg:h-20 lg:w-20"
               />
-              <div className="lg:ms-5">
-                <h3 className="text-start text-xl md:text-2xl font-bold">
+              <div>
+                <h3 className="text-center text-xl md:text-2xl font-bold">
                   {card.title}
                 </h3>
-                <p className="text-start text-muted-foreground mt-3 font-semibold">
+                <p className="text-center text-muted-foreground mt-3 font-semibold">
                   {card.desc}
                 </p>
               </div>
