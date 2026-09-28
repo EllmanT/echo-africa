@@ -5,8 +5,12 @@ import Reveal from "@/components/Reveal";
 import { cn } from "@/lib/utils";
 import VisualFrame from "./VisualFrame";
 
+/** Each service owns one accent hue. The matching .svc-* class in globals.css sets --accent. */
+export type ServiceTone = "web" | "ai" | "int" | "soft" | "logo";
+
 export type ServiceRowProps = {
   id: string;
+  tone: ServiceTone;
   title: React.ReactNode;
   subheading: string;
   points: string[];
@@ -20,7 +24,7 @@ export type ServiceRowProps = {
   first?: boolean;
 };
 
-const ServiceRow = ({ id, title, subheading, points, quoteHref, learnHref, visualLabel, visual, flip, first }: ServiceRowProps) => {
+const ServiceRow = ({ id, tone, title, subheading, points, quoteHref, learnHref, visualLabel, visual, flip, first }: ServiceRowProps) => {
   const text = (
     <div>
       <h2 id={`${id}-title`} className="font-display text-4xl font-extrabold leading-[1.02] tracking-[-0.035em] md:text-6xl">{title}</h2>
@@ -28,7 +32,7 @@ const ServiceRow = ({ id, title, subheading, points, quoteHref, learnHref, visua
       <ul className="mt-7 space-y-3">
         {points.map((p) => (
           <li key={p} className="flex items-start gap-3 text-base md:text-lg">
-            <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple/10 text-purple">
+            <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--accent)_14%,white)] text-[color:var(--accent-ink)]">
               <FaCheck size={10} aria-hidden="true" />
             </span>
             {p}
@@ -38,14 +42,14 @@ const ServiceRow = ({ id, title, subheading, points, quoteHref, learnHref, visua
       <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
         <Link
           href={quoteHref}
-          className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-foreground px-7 text-base font-medium text-background transition-[background-color,transform] duration-200 ease-out-strong hover:bg-purple active:scale-[0.97]"
+          className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-foreground px-7 text-base font-medium text-background transition-[background-color,transform] duration-200 ease-out-strong hover:bg-[color:var(--accent-ink)] active:scale-[0.97]"
         >
           Get a quote
           <FaArrowRight size={13} className="transition-transform duration-200 ease-out-strong group-hover:translate-x-1" />
         </Link>
         <Link
           href={learnHref}
-          className="text-base font-medium text-foreground underline decoration-black/25 underline-offset-4 transition-colors hover:text-purple hover:decoration-purple"
+          className="text-base font-medium text-foreground underline decoration-black/25 underline-offset-4 transition-colors hover:text-[color:var(--accent-ink)] hover:decoration-[color:var(--accent)]"
         >
           Learn more
         </Link>
@@ -68,7 +72,7 @@ const ServiceRow = ({ id, title, subheading, points, quoteHref, learnHref, visua
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className="scroll-mt-32 border-t border-black/[0.08] py-16 first:border-t-0 md:py-24"
+      className={cn("scroll-mt-32 py-16 md:py-28", `svc-${tone}`)}
     >
       <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16 lg:gap-24">
         <div className={cn(flip && "md:order-2")}>

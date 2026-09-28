@@ -6,7 +6,7 @@ import PageShell from "@/components/PageShell";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import JsonLd from "@/components/seo/JsonLd";
 import Reveal from "@/components/Reveal";
-import ToolDrift from "@/components/services/ToolDrift";
+import HeroGlyphs from "@/components/services/HeroGlyphs";
 import ServiceNav from "@/components/services/ServiceNav";
 import ServiceRow from "@/components/services/ServiceRow";
 import {
@@ -35,11 +35,11 @@ export const metadata: Metadata = buildMetadata({
 });
 
 const ANCHORS = [
-  { id: "web-development", label: "Web development" },
-  { id: "ai-automation", label: "AI automation" },
-  { id: "system-integration", label: "Integration" },
-  { id: "custom-software", label: "Custom software" },
-  { id: "logos", label: "Logos and brands" },
+  { id: "web-development", label: "Web development", tone: "web" as const },
+  { id: "ai-automation", label: "AI automation", tone: "ai" as const },
+  { id: "system-integration", label: "Integration", tone: "int" as const },
+  { id: "custom-software", label: "Custom software", tone: "soft" as const },
+  { id: "logos", label: "Logos and brands", tone: "logo" as const },
 ];
 
 const ServicesPage = () => {
@@ -58,7 +58,7 @@ const ServicesPage = () => {
       ))}
 
       <section className="relative mx-auto max-w-5xl pb-12 pt-14 text-center md:pb-16 md:pt-20">
-        <ToolDrift />
+        <HeroGlyphs />
         <div className="animate-rise relative">
           <h1 className="font-display text-5xl font-extrabold leading-[1.02] tracking-[-0.035em] md:text-7xl">
             What we <span className="text-purple">build.</span>
@@ -75,9 +75,10 @@ const ServicesPage = () => {
       <ServiceRow
         first
         id="web-development"
+        tone="web"
         title={
           <>
-            Websites that bring in <span className="text-purple">customers.</span>
+            Websites that bring in <span className="text-[color:var(--accent)]">customers.</span>
           </>
         }
         subheading="Fast, clear and built for phones. Your customers find you, trust you and message you."
@@ -95,9 +96,10 @@ const ServicesPage = () => {
       <ServiceRow
         flip
         id="ai-automation"
+        tone="ai"
         title={
           <>
-            AI that does the <span className="text-purple">boring work.</span>
+            AI that does the <span className="text-[color:var(--accent)]">boring work.</span>
           </>
         }
         subheading="Hand your repeat tasks to software. Replies, invoices and reports run on their own."
@@ -114,9 +116,10 @@ const ServicesPage = () => {
 
       <ServiceRow
         id="system-integration"
+        tone="int"
         title={
           <>
-            Your tools, <span className="text-purple">talking to each other.</span>
+            Your tools, <span className="text-[color:var(--accent)]">talking to each other.</span>
           </>
         }
         subheading="Stop typing the same thing into three systems. We connect the tools you already use so information moves on its own."
@@ -134,9 +137,10 @@ const ServicesPage = () => {
       <ServiceRow
         flip
         id="custom-software"
+        tone="soft"
         title={
           <>
-            Software built around <span className="text-purple">how you work.</span>
+            Software built around <span className="text-[color:var(--accent)]">how you work.</span>
           </>
         }
         subheading="When off-the-shelf tools do not fit, we build the one that does."
@@ -149,9 +153,10 @@ const ServicesPage = () => {
 
       <ServiceRow
         id="logos"
+        tone="logo"
         title={
           <>
-            A logo that looks <span className="text-purple">serious.</span>
+            A logo that looks <span className="text-[color:var(--accent)]">serious.</span>
           </>
         }
         subheading="Marks that look good on a signboard, an invoice and a phone screen."
@@ -163,16 +168,16 @@ const ServicesPage = () => {
       />
 
       <Reveal>
-        <section className="mb-20 rounded-[2rem] bg-purple/[0.07] px-6 py-14 text-center md:mb-28 md:py-20">
+        <section className="mb-20 rounded-[2rem] bg-foreground px-6 py-14 text-center text-background md:mb-28 md:py-20">
           <h2 className="mx-auto max-w-2xl font-display text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] md:text-5xl">
             Not sure which one you need?
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-lg leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-lg text-lg leading-relaxed text-background/70">
             Tell us about your business in two minutes. We will point you to the right fix, and we build it first.
           </p>
           <Link
             href="/contact"
-            className="group mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-foreground px-8 text-base font-medium text-background transition-[background-color,transform] duration-200 ease-out-strong hover:bg-purple active:scale-[0.97]"
+            className="group mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-background px-8 text-base font-medium text-foreground transition-[background-color,color,transform] duration-200 ease-out-strong hover:bg-purple hover:text-white active:scale-[0.97]"
           >
             Start your project
             <FaArrowRight size={13} className="transition-transform duration-200 ease-out-strong group-hover:translate-x-1" />
