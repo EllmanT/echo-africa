@@ -99,7 +99,7 @@ const WorkPage = async () => {
         </div>
       </section>
 
-      <section id="brands" className="scroll-mt-24 border-t border-black/[0.08] pb-8 pt-16 md:pt-28">
+      <section id="brands" className="scroll-mt-24 pb-8 pt-16 md:pt-28">
         <Reveal>
           <h2 className="text-center font-display text-6xl font-extrabold tracking-[-0.04em] md:text-8xl">
             Logos and brands

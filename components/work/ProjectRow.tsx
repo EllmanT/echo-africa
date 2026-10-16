@@ -10,7 +10,7 @@ const ProjectRow = ({ study, priority = false }: { study: CaseStudy; priority?: 
   return (
     <Link
       href={`/work/${study.slug}`}
-      className="group grid items-center gap-8 border-t border-black/[0.08] py-10 md:grid-cols-[1.2fr_1fr] md:gap-16 md:py-14"
+      className="group grid items-center gap-8 py-10 md:grid-cols-[1.2fr_1fr] md:gap-16 md:py-14"
     >
       <div className="relative aspect-[16/10] overflow-hidden rounded-3xl border border-black/[0.06] bg-muted">
         <Image

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { runNurtureSweep } from "@/lib/nurture/sequence";
+import { NURTURE_SLOT } from "@/lib/admin/jobRuns";
 import { requireDb } from "@/lib/db/mongodb";
 
 export const runtime = "nodejs";
@@ -19,8 +20,8 @@ export async function POST(request: Request) {
     const result = await runNurtureSweep();
     const db = await requireDb();
     await db.collection("jobRuns").insertOne({
-      slot: "nurture",
-      status: result.errors.length ? "needs-review" : "published",
+      slot: NURTURE_SLOT,
+      status: result.errors.length ? "needs-review" : "ok",
       startedAt,
       finishedAt: new Date(),
       reasons: result.errors,

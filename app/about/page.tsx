@@ -2,13 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 import Image from "next/image";
 import Link from "next/link";
-import { FaArrowRight, FaMobileScreenButton, FaShieldHalved, FaComments } from "react-icons/fa6";
+import { FaArrowRight } from "react-icons/fa6";
 import type { Metadata } from "next";
 
 import PageShell from "@/components/PageShell";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Experience from "@/components/Experience";
 import Reveal from "@/components/Reveal";
+import HowWeWork from "@/components/about/HowWeWork";
+import PhotoTrio from "@/components/about/PhotoTrio";
+import StoryTimeline from "@/components/about/StoryTimeline";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 
@@ -24,43 +27,48 @@ const PHOTOS = [
   {
     src: "/images/about/harare-morning.jpg",
     alt: "Harare city centre on a bright morning, with tall buildings above green trees",
-    ratio: "aspect-[3/4]",
-    offset: "md:mt-10",
-    delay: 0,
   },
   {
     src: "/images/about/victoria-falls-bridge.jpg",
     alt: "The Victoria Falls bridge arching over the Zambezi gorge",
-    ratio: "aspect-[3/4]",
-    offset: "",
-    delay: 0.1,
   },
   {
     src: "/images/contact/harare-night.jpg",
     alt: "Harare city centre at dusk with light trails from passing traffic",
-    ratio: "aspect-[3/4]",
-    offset: "md:mt-10",
-    delay: 0.2,
   },
 ];
 
-const HOW_WE_WORK = [
+/** What Eka builds, each wearing its colour from the Services page and linking to that service. */
+const WHAT_WE_BUILD = [
+  { label: "Websites", href: "/services/web-development", tone: "web" },
+  { label: "AI automation", href: "/services/ai-automation", tone: "ai" },
+  { label: "Integrations", href: "/services/system-integration", tone: "int" },
+  { label: "Custom software", href: "/services/software-development", tone: "soft" },
+  { label: "Logos", href: "/services/logo-design", tone: "logo" },
+] as const;
+
+const STORY = [
   {
-    Icon: FaShieldHalved,
-    title: "We build it first",
-    body: "You see the finished work before you pay. Love it, pay. Do not, walk away.",
+    tone: "web",
+    title: "Learned the craft",
+    body: "Full-stack development and AI automation at Axis Solutions, plus a JS Mastery certification. Real systems, real deadlines.",
   },
   {
-    Icon: FaComments,
-    title: "Plain words",
-    body: "No jargon and no fog. You always know what we are doing and why.",
+    tone: "ai",
+    title: "Started Eka in Harare",
+    body: "Too many good Zimbabwean businesses were stuck with slow, forgettable websites, or none at all. So Eka builds first, and you pay only when you love it.",
   },
   {
-    Icon: FaMobileScreenButton,
-    title: "Made for phones",
-    body: "Most of your customers are on a phone with limited data. We build for that first.",
+    tone: "int",
+    title: "Real businesses, real results",
+    body: "Dealerships, craft makers, mining and more. Faramatsi Motors turned Google searches into quote requests. Every project is a site we are proud to show.",
   },
-];
+  {
+    tone: "soft",
+    title: "Still hands-on",
+    body: "Tapiwa reads every request that comes through this site himself, and answers it himself.",
+  },
+] as const;
 
 // Drop a portrait at public/images/about/tapiwa.jpg and it appears here on the next deploy.
 const hasPortrait = fs.existsSync(path.join(process.cwd(), "public", "images", "about", "tapiwa.jpg"));
@@ -72,8 +80,13 @@ const AboutPage = () => {
 
       <section className="mx-auto max-w-3xl pb-12 pt-14 text-center md:pb-16 md:pt-20">
         <div className="animate-rise">
+          <p aria-hidden="true" className="mb-6 flex items-center justify-center gap-2">
+            {["#2563EB", "#7C3AED", "#16A34A", "#F59E0B", "#E5533D"].map((c) => (
+              <span key={c} className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c }} />
+            ))}
+          </p>
           <h1 className="font-display text-5xl font-extrabold leading-[1.02] tracking-[-0.035em] md:text-7xl">
-            About <span className="text-purple">Eka.</span>
+            About <span className="text-spectrum">Eka.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
             Eka is a {siteConfig.city}-based web development and AI automation agency, working with businesses across
@@ -82,15 +95,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-4xl grid-cols-3 gap-3 pb-16 md:gap-6 md:pb-24">
-        {PHOTOS.map((p) => (
-          <Reveal key={p.src} delay={p.delay} className={p.offset}>
-            <div className={`relative ${p.ratio} overflow-hidden rounded-2xl bg-muted md:rounded-[2rem]`}>
-              <Image src={p.src} alt={p.alt} fill sizes="(min-width: 896px) 270px, 33vw" className="object-cover" />
-            </div>
-          </Reveal>
-        ))}
-      </div>
+      <PhotoTrio photos={PHOTOS} />
 
       <section className="mx-auto max-w-2xl pb-16 text-center md:pb-24">
         <Reveal>
@@ -108,18 +113,46 @@ const AboutPage = () => {
             satisfied with the result.
           </p>
         </Reveal>
+        <Reveal delay={0.14}>
+          <ul className="mt-9 flex flex-wrap items-center justify-center gap-2.5">
+            {WHAT_WE_BUILD.map(({ label, href, tone }) => (
+              <li key={label} className={`svc-${tone}`}>
+                <Link
+                  href={href}
+                  className="group inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white px-4 py-2 text-sm font-medium transition-[border-color,background-color,transform] duration-200 ease-out-strong hover:border-[color:var(--accent)] hover:bg-[color:var(--accent-soft)] active:scale-[0.97]"
+                >
+                  <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[color:var(--accent)]" />
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </section>
 
-      <section className="mx-auto max-w-2xl border-t border-black/[0.08] py-16 text-center md:py-24">
+      <section className="py-16 md:py-24">
         <Reveal>
-          <div className="relative mx-auto h-28 w-28 overflow-hidden rounded-full border border-black/[0.06] bg-gradient-to-br from-purple to-[#5b21b6]">
-            {hasPortrait ? (
-              <Image src="/images/about/tapiwa.jpg" alt="Tapiwa Muranda" fill sizes="112px" className="object-cover" />
-            ) : (
-              <span aria-hidden="true" className="flex h-full w-full items-center justify-center font-display text-3xl font-extrabold text-white">
-                TM
-              </span>
-            )}
+          <h2 className="text-center font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
+            Our <span className="text-purple">story</span>
+          </h2>
+        </Reveal>
+        <div className="mt-14">
+          <StoryTimeline steps={[...STORY]} />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-2xl py-16 text-center md:py-24">
+        <Reveal>
+          <div className="mx-auto h-[7.5rem] w-[7.5rem] rounded-full bg-[conic-gradient(from_200deg,#2563eb,#7c3aed,#e5533d,#f59e0b,#16a34a,#2563eb)] p-[3px]">
+            <div className="relative h-full w-full overflow-hidden rounded-full border-[3px] border-white bg-gradient-to-br from-purple to-[#5b21b6]">
+              {hasPortrait ? (
+                <Image src="/images/about/tapiwa.jpg" alt="Tapiwa Muranda" fill sizes="120px" className="object-cover" />
+              ) : (
+                <span aria-hidden="true" className="flex h-full w-full items-center justify-center font-display text-3xl font-extrabold text-white">
+                  TM
+                </span>
+              )}
+            </div>
           </div>
           <h2 className="mt-6 font-display text-3xl font-extrabold tracking-[-0.02em] md:text-4xl">Tapiwa Muranda</h2>
           <p className="mt-1 text-base font-medium text-muted-foreground">Founder, Eka</p>
@@ -131,22 +164,14 @@ const AboutPage = () => {
         </Reveal>
       </section>
 
-      <section className="border-t border-black/[0.08] py-16 md:py-24">
+      <section className="py-16 md:py-24">
         <Reveal>
           <h2 className="text-center font-display text-4xl font-extrabold tracking-[-0.03em] md:text-5xl">
             How we <span className="text-purple">work</span>
           </h2>
         </Reveal>
-        <div className="mx-auto mt-12 grid max-w-4xl divide-y divide-black/[0.08] md:grid-cols-3 md:divide-x md:divide-y-0">
-          {HOW_WE_WORK.map(({ Icon, title, body }, i) => (
-            <Reveal key={title} delay={i * 0.08} className="px-4 py-8 text-center md:px-8 md:py-4">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple/10 text-purple">
-                <Icon size={18} aria-hidden="true" />
-              </span>
-              <h3 className="mt-5 font-display text-xl font-bold tracking-tight">{title}</h3>
-              <p className="mx-auto mt-2 max-w-[16rem] text-base leading-relaxed text-muted-foreground">{body}</p>
-            </Reveal>
-          ))}
+        <div className="mx-auto mt-12 max-w-5xl">
+          <HowWeWork />
         </div>
       </section>
 

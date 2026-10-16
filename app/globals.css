@@ -246,3 +246,45 @@ textarea {
   .glyph-float { animation: none !important; }
   .glyph-scale { transition: none; }
 }
+
+/* Auto-cycling accordion: the progress line is the timer. Its end hands over to the next panel. */
+.acc-bar {
+  transform-origin: left center;
+  animation-name: acc-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes acc-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* The five Services hues drifting slowly through a couple of words. Paint-only and tiny. */
+.text-spectrum {
+  background-image: linear-gradient(90deg, #2563eb, #7c3aed, #e5533d, #f59e0b, #16a34a, #2563eb);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: spectrum 9s linear infinite;
+}
+@keyframes spectrum {
+  to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-spectrum { animation: none; }
+}
+
+/* The red strike through "risk" on the home hero: drawn once, after the headline has settled. */
+.strike-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: strike-draw 0.7s cubic-bezier(0.23, 1, 0.32, 1) 1.8s forwards;
+}
+@keyframes strike-draw {
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .strike-draw { animation: none; stroke-dashoffset: 0; }
+}

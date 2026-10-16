@@ -13,6 +13,7 @@ const inputClass = "h-10 w-full rounded-lg border border-black/[0.12] bg-white p
 const STATUS_STYLES: Record<string, string> = {
   running: "bg-amber-100 text-amber-800",
   published: "bg-emerald-100 text-emerald-800",
+  ok: "bg-emerald-100 text-emerald-800",
   "needs-review": "bg-orange-100 text-orange-800",
   failed: "bg-red-100 text-red-800",
 };

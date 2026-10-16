@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getDashboardStats } from "@/lib/admin/dashboard";
+import { lastArticleRun } from "@/lib/admin/jobRuns";
 import StatCard from "@/components/admin/StatCard";
 import { StatusBadge, TierBadge } from "@/components/admin/Badge";
 
@@ -19,7 +20,7 @@ const formatDate = (d: Date) =>
   new Date(d).toLocaleDateString("en-ZW", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 const DashboardPage = async () => {
-  const stats = await getDashboardStats();
+  const [stats, lastRun] = await Promise.all([getDashboardStats(), lastArticleRun()]);
 
   if (!stats) {
     return (
@@ -33,6 +34,18 @@ const DashboardPage = async () => {
     <div>
       <h1 className="font-display text-2xl font-bold tracking-tight">Dashboard</h1>
       <p className="mt-1 text-sm text-muted-foreground">The last 30 days, and everything on record.</p>
+
+      <p className="mt-4 text-sm">
+        <span className="font-semibold">Last Playbook run: </span>
+        {lastRun ? (
+          <span className={lastRun.status === "failed" ? "text-red-700" : "text-muted-foreground"}>
+            {formatDate(lastRun.startedAt)}, {lastRun.status.replace("-", " ")}
+            {lastRun.error ? ` (${lastRun.error.slice(0, 120)})` : ""}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">none yet</span>
+        )}
+      </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total leads" value={stats.totalLeads} />
