@@ -1,33 +1,35 @@
 "use client";
 
-import { FaComments, FaMobileScreenButton, FaShieldHalved } from "react-icons/fa6";
+import RevealCards, { type RevealCard } from "@/components/RevealCards";
 
-import AutoAccordion, { type AccordionItem } from "@/components/AutoAccordion";
-
-const ITEMS: AccordionItem[] = [
+const CARDS: RevealCard[] = [
   {
-    tone: "ai",
-    Icon: FaShieldHalved,
+    label: "Build first",
     title: "We build it first",
-    body: "You see the finished work before you pay. Love it, pay. Do not, walk away.",
-    points: ["No deposit and no invoice up front", "You approve the result, then we talk price"],
+    des: "You see the finished work before you pay. Love it, pay. Do not, walk away.",
+    bg: "bg-emerald-100",
+    speed: 5.1,
   },
   {
-    tone: "int",
-    Icon: FaComments,
+    label: "Plain words",
     title: "Plain words",
-    body: "No jargon and no fog. You always know what we are doing and why.",
-    points: ["Quick answers on WhatsApp", "Every step explained in simple English"],
+    des: "No jargon and no fog. You always know what we are doing and why.",
+    bg: "bg-pink-100",
+    colors: [
+      [255, 166, 158],
+      [221, 255, 247],
+    ],
+    dotSize: 2,
   },
   {
-    tone: "soft",
-    Icon: FaMobileScreenButton,
+    label: "Phone first",
     title: "Made for phones",
-    body: "Most of your customers are on a phone with limited data. We build for that first.",
-    points: ["Pages that load fast on mobile data", "Tested on real phones, not just a desktop"],
+    des: "Most of your customers are on a phone with limited data. We build for that first.",
+    bg: "bg-sky-100",
+    colors: [[125, 211, 252]],
   },
 ];
 
-const HowWeWork = () => <AutoAccordion items={ITEMS} interval={5600} className="lg:h-[24rem]" />;
+const HowWeWork = () => <RevealCards cards={CARDS} interval={5000} />;
 
 export default HowWeWork;

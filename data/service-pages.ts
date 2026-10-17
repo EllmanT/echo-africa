@@ -1,4 +1,5 @@
-import type { AccordionTone } from "@/components/AutoAccordion";
+/** One accent per item. The matching .svc-* class in globals.css sets the colours. */
+export type AccordionTone = "web" | "ai" | "int" | "soft" | "logo";
 
 /** What each service page adds on top of data/services.ts: colour, photos, the plain-words process and where the quote link goes. */
 export type ServicePageExtras = {

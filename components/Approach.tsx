@@ -1,51 +1,51 @@
 "use client";
 
-import { FaCompassDrafting, FaHandshakeAngle, FaMagnifyingGlass, FaRocket } from "react-icons/fa6";
+import RevealCards, { type RevealCard } from "./RevealCards";
 
-import AutoAccordion, { type AccordionItem } from "./AutoAccordion";
-
-const PHASES: AccordionItem[] = [
+const PHASES: RevealCard[] = [
   {
-    tone: "web",
-    Icon: FaMagnifyingGlass,
+    label: "Phase 1",
     title: "Discovery & Strategy",
-    body: "We learn your business, your goals, and your customers. No assumptions.",
-    points: ["A short call about what you actually need", "A clear plan and a price you agree to up front"],
+    des: "We learn your business, your goals, and your customers. No assumptions.",
+    bg: "bg-emerald-100",
+    speed: 5.1,
   },
   {
-    tone: "ai",
-    Icon: FaCompassDrafting,
+    label: "Phase 2",
     title: "Build & Review",
-    body: "We build your solution and check in with you throughout. You see progress before it's finished.",
-    points: ["Working previews you can open on your phone", "Your feedback shapes every round"],
+    des: "We build your solution and check in with you throughout. You see progress before it's finished.",
+    bg: "bg-pink-100",
+    colors: [
+      [255, 166, 158],
+      [221, 255, 247],
+    ],
+    dotSize: 2,
   },
   {
-    tone: "int",
-    Icon: FaRocket,
+    label: "Phase 3",
     title: "Launch & Sign-Off",
-    body: "We launch only when you're happy. Payment happens here, not before.",
-    points: ["You approve the finished work", "Pay only once you love it"],
+    des: "We launch only when you're happy. Payment happens here, not before.",
+    bg: "bg-sky-100",
+    colors: [[125, 211, 252]],
   },
   {
-    tone: "soft",
-    Icon: FaHandshakeAngle,
+    label: "Phase 4",
     title: "Support & Improvement",
-    body: "We don't disappear after launch. We stay available, fix issues, and keep improving your site.",
-    points: ["Fixes and changes when you need them", "Ideas to keep growing after day one"],
+    des: "We don't disappear after launch. We stay available, fix issues, and keep improving your site.",
+    bg: "bg-violet-100",
+    colors: [[125, 211, 252]],
   },
 ];
 
-const Approach = () => {
-  return (
-    <section className="w-full py-20">
-      <h2 className="heading">
-        The <span className="text-purple">Approach</span>
-      </h2>
-      <div className="mt-14 w-full md:mt-20">
-        <AutoAccordion items={PHASES} />
-      </div>
-    </section>
-  );
-};
+const Approach = () => (
+  <section className="w-full py-20">
+    <h2 className="heading">
+      The <span className="text-purple">Approach</span>
+    </h2>
+    <div className="my-20 w-full">
+      <RevealCards cards={PHASES} />
+    </div>
+  </section>
+);
 
 export default Approach;
