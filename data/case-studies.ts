@@ -184,8 +184,38 @@ export const caseStudies: CaseStudy[] = [
     tags: ["web development", "AI features", "automotive", "Zimbabwe"],
   },
   {
-    slug: "mosalex-group",
+    slug: "asia-mobility",
     order: 3,
+    client: "Asia Mobility",
+    category: "Website",
+    location: "Zimbabwe",
+    tagline: "One website to source JAC, Foton, Yutong and Higer.",
+    summary:
+      "A new website for Asia Mobility, a sourcing business for Asian vehicle makes including JAC, Foton, Yutong and Higer.",
+    resultLine: "A new home for sourcing JAC, Foton, Yutong and Higer vehicles.",
+    heroStats: [
+      { value: "4", label: "Asian makes in one place" },
+      { value: "New", label: "released this month, results still building" },
+    ],
+    problemHeadline: "Several makes, one buyer. They should not have to hunt.",
+    problem:
+      "Asia Mobility sources vehicles from Asian makes such as JAC, Foton, Yutong and Higer. Buyers needed one clear place to see what is on offer and to start a conversation, instead of piecing it together from separate brands and chats.",
+    solution:
+      "We built a bold, image-led website with a full-screen introduction to each make, so a visitor can move from JAC to Foton to Yutong to Higer in seconds. It is made for phones first and keeps the way to get in touch close at hand.",
+    solutionPoints: [
+      "A full-screen showcase for each make",
+      "Fast on mobile data, built for phones first",
+      "A clear way to enquire about the vehicle you want",
+    ],
+    outcomeHeadline: "Live now, and just getting started.",
+    outcome:
+      "The site went live this month, so there are no long-term numbers to share yet. It gives Asia Mobility a professional front door for every make it sources. We will add real results here as the data comes in.",
+    image: "/website-images/asia-mob-homepage.png",
+    tags: ["web development", "vehicle sourcing", "automotive", "Zimbabwe"],
+  },
+  {
+    slug: "mosalex-group",
+    order: 4,
     client: "Mosalex Group",
     category: "Website",
     location: "Zimbabwe",
@@ -213,7 +243,7 @@ export const caseStudies: CaseStudy[] = [
   },
   {
     slug: "thee-art-crafts",
-    order: 4,
+    order: 5,
     client: "Thee Art Crafts",
     category: "Website",
     location: "Zimbabwe",
@@ -241,7 +271,7 @@ export const caseStudies: CaseStudy[] = [
   },
   {
     slug: "kolkart-mining",
-    order: 5,
+    order: 6,
     client: "Kolkart Mining",
     category: "Logo & Brand Identity",
     location: "Zimbabwe",
@@ -267,7 +297,7 @@ export const caseStudies: CaseStudy[] = [
   },
   {
     slug: "excogitate",
-    order: 6,
+    order: 7,
     client: "Excogitate",
     category: "Logo & Brand Identity",
     location: "Zimbabwe",

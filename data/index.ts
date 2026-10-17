@@ -91,6 +91,14 @@ export const projects = [
   },
   {
     id: 3,
+    title: "Asia Mobility",
+    des: "Website for sourcing JAC, Foton, Yutong and Higer vehicles. Just released, built phone first.",
+    img: "/website-images/asia-mob-homepage.png",
+    iconLists: [],
+    link: "/work/asia-mobility",
+  },
+  {
+    id: 4,
     title: "Mosalex Group",
     des: "Website for a growing Zimbabwean business group. Built to look professional and win new clients.",
     img: "/website-images/mosalex-preview.png",
@@ -98,7 +106,7 @@ export const projects = [
     link: "https://mosalexgroup.com",
   },
   {
-    id: 4,
+    id: 5,
     title: "Thee Art Crafts",
     des: "Website built to show off their craft and bring in more customers.",
     img: "/website-images/theeartcrafts-preview.png",
@@ -106,7 +114,7 @@ export const projects = [
     link: "https://theeartcrafts.com",
   },
   {
-    id: 5,
+    id: 6,
     title: "Business Automation with AI",
     des: "We automate the tasks your team does by hand every day. Document processing, reporting, scheduling, handled by AI so your team can focus on real work.",
     img: "/b5.svg",
@@ -199,6 +207,12 @@ export const companies = [
     name: "Faramatsi Toyota",
     img: "/client-logos/fmtoyota-logo.png",
     nameImg: "/client-logos/fmtoyota-logo.png",
+  },
+  {
+    id: 8,
+    name: "Asia Mobility",
+    img: "/client-logos/am_logo.png",
+    nameImg: "/client-logos/am_logo.png",
   },
 ];
 

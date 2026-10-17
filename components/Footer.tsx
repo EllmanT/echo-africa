@@ -21,6 +21,7 @@ const columns = [
       { name: "All projects", href: "/work" },
       { name: "Faramatsi Motors", href: "/work/faramatsi-motors" },
       { name: "Faramatsi Toyota", href: "/work/faramatsi-toyota" },
+      { name: "Asia Mobility", href: "/work/asia-mobility" },
       { name: "Mosalex Group", href: "/work/mosalex-group" },
     ],
   },
