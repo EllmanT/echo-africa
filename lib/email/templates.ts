@@ -27,21 +27,62 @@ export function escapeHtml(value: string): string {
 
 export const firstName = (name: string) => name.trim().split(/\s+/)[0] || "there";
 
-export function layout(inner: string, leadId?: string): string {
-  const unsubLine = leadId
-    ? ` &middot; <a href="${unsubscribeUrl(leadId)}" style="color:#7a7d8c;">Unsubscribe</a>`
+/** Bold and coloured: the one emphasis style in client emails, used sparingly on the phrase that matters. */
+export const hl = (text: string) => `<strong style="color:${PURPLE};font-weight:800;">${text}</strong>`;
+
+/** One short idea per paragraph, centred by the layout. */
+export const para = (html: string, bottom = 22) =>
+  `<p style="margin:0 0 ${bottom}px;font-size:18px;line-height:1.55;">${html}</p>`;
+
+/** A large opening line. */
+export const headline = (html: string) =>
+  `<h1 style="margin:0 0 24px;font-size:28px;line-height:1.2;font-weight:800;letter-spacing:-0.01em;color:#111111;">${html}</h1>`;
+
+export const link = (href: string, label: string) =>
+  `<a href="${href}" style="color:${PURPLE};font-weight:700;">${label}</a>`;
+
+export const signoff = () =>
+  `<p style="margin:8px 0 0;font-size:16px;line-height:1.5;color:#111111;"><strong>Tapiwa</strong><br><span style="color:#7a7d8c;">Founder, Eka</span></p>`;
+
+/** Company proof, centred under every client email: logo, name, place, how to reach us. */
+function companyFooter(leadId?: string): string {
+  const muted = "color:#7a7d8c;text-decoration:none;";
+  const unsub = leadId
+    ? `<br><a href="${unsubscribeUrl(leadId)}" style="color:#a0a3b1;text-decoration:underline;">Unsubscribe</a>`
     : "";
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:40px;border-top:1px solid #ececf1;">
+<tr><td align="center" style="padding:28px 0 0;font-size:13px;line-height:1.7;color:#7a7d8c;text-align:center;">
+<a href="${siteConfig.url}"><img src="${siteConfig.url}/eka-wordmark.png" alt="Eka" width="112" style="display:block;margin:0 auto 14px;border:0;height:auto;"></a>
+<strong style="color:#111111;">Eka</strong> &middot; Websites, AI and software for African businesses<br>
+Harare, Zimbabwe<br>
+<a href="${siteConfig.url}" style="${muted}">eka.dev</a> &middot; <a href="https://wa.me/${siteConfig.whatsappNumber}" style="${muted}">WhatsApp ${siteConfig.whatsappDisplay}</a> &middot; <a href="mailto:${siteConfig.email}" style="${muted}">${siteConfig.email}</a>${unsub}
+</td></tr></table>`;
+}
+
+/** Client email shell: white, centred, minimal. Body copy goes in as short blocks. */
+export function layout(inner: string, leadId?: string): string {
+  return `<!doctype html><html><body style="margin:0;background:#ffffff;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111111;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+<tr><td align="center" style="text-align:center;">${inner}</td></tr>
+<tr><td>${companyFooter(leadId)}</td></tr>
+</table>
+</td></tr></table></body></html>`;
+}
+
+/** Plain data layout, for the owner's own lead notification. */
+function plainLayout(inner: string): string {
   return `<!doctype html><html><body style="margin:0;background:#f6f6f9;padding:24px 12px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#14151f;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;padding:32px 28px;">
 <tr><td style="font-size:16px;line-height:1.6;">${inner}</td></tr>
 </table>
-<p style="font-size:12px;color:#7a7d8c;margin:16px 0 0;">Eka, Harare, Zimbabwe &middot; <a href="${siteConfig.url}" style="color:#7a7d8c;">eka.dev</a>${unsubLine}</p>
 </td></tr></table></body></html>`;
 }
 
+/** The one big call to action. Wrapped in its own paragraph so it centres and spaces like the copy. */
 export const button = (href: string, label: string) =>
-  `<a href="${href}" style="display:inline-block;background:${PURPLE};color:#ffffff;text-decoration:none;font-weight:600;padding:13px 24px;border-radius:999px;">${label}</a>`;
+  `<p style="margin:0 0 30px;"><a href="${href}" style="display:inline-block;background:${PURPLE};color:#ffffff;text-decoration:none;font-weight:800;font-size:18px;padding:17px 34px;border-radius:10px;">${label}</a></p>`;
 
 export const whatsappLink = (text: string) =>
   `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(text)}`;
@@ -93,20 +134,21 @@ export function leadConfirmationEmail(lead: LeadInput, tier: LeadTier, opts: Con
       `Founder, Eka`,
     ].join("\n");
 
-    const html = layout(`
-<p style="margin:0 0 14px;">Hi ${first},</p>
-<p style="margin:0 0 14px;">Thanks for telling me about <strong>${business}</strong>. I read every request myself.</p>
-<p style="margin:0 0 14px;">You asked about ${escapeHtml(needs)}, and the range that feels right is <strong>${escapeHtml(plan)}</strong>.</p>
-${
-  booking
-    ? `<p style="margin:0 0 20px;"><strong>Next step:</strong> pick a time that suits you and we'll talk it through.</p>
-<p style="margin:0 0 20px;">${button(siteConfig.calUrl, "Book your call")}</p>`
-    : `<p style="margin:0 0 20px;"><strong>Next step:</strong> I'll message you on WhatsApp or email to talk through your ${escapeHtml(needs)}.</p>`
-}
-<p style="margin:0 0 14px;">Prefer WhatsApp? Message me on <a href="${whatsappLink(`Hi Tapiwa, it's ${lead.name} from ${lead.businessName}.`)}" style="color:${PURPLE};">${siteConfig.whatsappDisplay}</a>.</p>
-<p style="margin:0 0 14px;">While you wait, this is worth 5 minutes: the <a href="${checklistUrl()}" style="color:${PURPLE};">Website Launch Checklist</a> for Zimbabwean businesses.</p>
-<p style="margin:0 0 20px;">Remember how we work: we build it first, and you pay only when you love it.</p>
-<p style="margin:0;">Tapiwa<br><span style="color:#7a7d8c;">Founder, Eka</span></p>`, leadId);
+    const html = layout(
+      headline(`Got it, ${first}.`) +
+        para(`Thanks for telling me about ${hl(business)}. I read every request myself.`) +
+        para(`You asked about ${escapeHtml(needs)}. The range that feels right is ${hl(escapeHtml(plan))}.`) +
+        (booking
+          ? para(`${hl("Next step:")} pick a time that suits you.`, 26) + button(siteConfig.calUrl, "Book your call")
+          : para(`${hl("Next step:")} I'll message you on WhatsApp or email to talk through your ${escapeHtml(needs)}.`)) +
+        para(
+          `Prefer WhatsApp? ${link(whatsappLink(`Hi Tapiwa, it's ${lead.name} from ${lead.businessName}.`), `Message me on ${siteConfig.whatsappDisplay}`)}`
+        ) +
+        para(`While you wait, read the ${link(checklistUrl(), "Website Launch Checklist")}. It takes 5 minutes.`) +
+        para(`We build it first. ${hl("You pay only when you love it.")}`) +
+        signoff(),
+      leadId
+    );
 
     return { to: lead.email, subject, html, text };
   }
@@ -129,15 +171,17 @@ ${
     `Founder, Eka`,
   ].join("\n");
 
-  const html = layout(`
-<p style="margin:0 0 14px;">Hi ${first},</p>
-<p style="margin:0 0 14px;">Thanks for telling me about <strong>${business}</strong>.</p>
-<p style="margin:0 0 14px;">I'll be straight with you: a custom build is probably not the right fit at this budget yet. I'd rather tell you that than waste your time.</p>
-<p style="margin:0 0 8px;">Here is what I can do for you right now, for free:</p>
-<p style="margin:0 0 6px;">1. <a href="${checklistUrl()}" style="color:${PURPLE};">The Website Launch Checklist</a></p>
-<p style="margin:0 0 18px;">2. <a href="${playbookUrl()}" style="color:${PURPLE};">The Playbook</a>, with new tips on websites and AI every day</p>
-<p style="margin:0 0 20px;">When your budget grows, come back. The offer stays the same: we build it first, and you pay only when you love it.</p>
-<p style="margin:0;">Tapiwa<br><span style="color:#7a7d8c;">Founder, Eka</span></p>`, leadId);
+  const html = layout(
+    headline(`Thanks, ${first}.`) +
+      para(`I read what you told me about ${hl(business)}.`) +
+      para(`I'll be straight with you: a custom build is ${hl("probably not the right fit")} at this budget yet. I'd rather say that than waste your time.`) +
+      para(`Here is what I can do for you right now, free:`) +
+      para(link(checklistUrl(), "The Website Launch Checklist"), 8) +
+      para(`${link(playbookUrl(), "The Playbook")}, with new tips on websites and AI`) +
+      para(`When your budget grows, come back. We build it first, and ${hl("you pay only when you love it.")}`) +
+      signoff(),
+    leadId
+  );
 
   return { to: lead.email, subject, html, text };
 }
@@ -180,11 +224,11 @@ export function ownerNotificationEmail(
     )
     .join("");
 
-  const html = layout(`
+  const html = plainLayout(`
 <p style="margin:0 0 6px;font-size:13px;font-weight:700;letter-spacing:.04em;color:${tier === "nurture" ? "#7a7d8c" : PURPLE};">${tag} LEAD</p>
 <h1 style="margin:0 0 18px;font-size:22px;line-height:1.25;">${escapeHtml(lead.businessName)}</h1>
 <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px;">${tableRows}</table>
-<p style="margin:22px 0 0;">${button(waLink, "Reply on WhatsApp")}</p>`);
+<p style="margin:22px 0 0;"><a href="${waLink}" style="display:inline-block;background:${PURPLE};color:#ffffff;text-decoration:none;font-weight:600;padding:13px 24px;border-radius:999px;">Reply on WhatsApp</a></p>`);
 
   const text = rows.map(([k, v]) => `${k}: ${v}`).join("\n") + `\n\nWhatsApp: ${waLink}`;
 

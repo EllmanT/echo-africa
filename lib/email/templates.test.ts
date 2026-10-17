@@ -65,3 +65,21 @@ describe("lead emails", () => {
     expect(mail.subject).toContain("[PRIORITY]");
   });
 });
+
+describe("client email style", () => {
+  process.env.SESSION_SECRET ??= "test-secret";
+  it("puts the company logo and details at the bottom of the confirmation and keeps unsubscribe for sequence emails", () => {
+    const mail = leadConfirmationEmail(lead, "qualified", { ...opts, leadId: "abc123" });
+    expect(mail.html).toContain("/eka-wordmark.png");
+    expect(mail.html).toContain("Harare, Zimbabwe");
+    expect(mail.html).toContain("wa.me/263778115084");
+    expect(mail.html).toContain("Unsubscribe");
+    expect(mail.html).toContain("text-align:center");
+  });
+
+  it("uses bold purple for emphasis and escapes the business name", () => {
+    const mail = leadConfirmationEmail(lead, "qualified", opts);
+    expect(mail.html).toContain("color:#7C3AED;font-weight:800");
+    expect(mail.html).not.toContain("<b>Motors</b>");
+  });
+});
