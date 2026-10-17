@@ -7,6 +7,7 @@ import { companies, testimonials } from "@/data";
 import { InfiniteMovingCards } from "./ui/InfiniteCards";
 
 const socialProofImages = [
+  "/social-proof/am-testimonial.jpeg",
   "/social-proof/sproof-1.png",
   "/social-proof/sproof-2.png",
   "/social-proof/sproof-3.png",

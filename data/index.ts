@@ -95,7 +95,7 @@ export const projects = [
     des: "Website for sourcing JAC, Foton, Yutong and Higer vehicles. Just released, built phone first.",
     img: "/website-images/asia-mob-homepage.png",
     iconLists: [],
-    link: "/work/asia-mobility",
+    link: "https://www.asiamobility.co.zw/",
   },
   {
     id: 4,
@@ -141,6 +141,11 @@ export const testimonials = [
       "The website design exceeded our expectations. The team understood our brand immediately.",
     name: "Thee Art Crafts",
     title: "Creative Business, Zimbabwe",
+  },
+  {
+    quote: "The website is superb.",
+    name: "Asia Mobility",
+    title: "Vehicle Sourcing, Zimbabwe",
   },
   {
     quote:

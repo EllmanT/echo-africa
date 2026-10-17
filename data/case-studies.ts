@@ -195,7 +195,7 @@ export const caseStudies: CaseStudy[] = [
     resultLine: "A new home for sourcing JAC, Foton, Yutong and Higer vehicles.",
     heroStats: [
       { value: "4", label: "Asian makes in one place" },
-      { value: "New", label: "released this month, results still building" },
+      { value: "Superb", label: "the client's own word for the finished site" },
     ],
     problemHeadline: "Several makes, one buyer. They should not have to hunt.",
     problem:
@@ -207,10 +207,11 @@ export const caseStudies: CaseStudy[] = [
       "Fast on mobile data, built for phones first",
       "A clear way to enquire about the vehicle you want",
     ],
-    outcomeHeadline: "Live now, and just getting started.",
-    outcome:
-      "The site went live this month, so there are no long-term numbers to share yet. It gives Asia Mobility a professional front door for every make it sources. We will add real results here as the data comes in.",
+    outcomeHeadline: "Live, and the Asia Mobility team love it.",
+        outcome:
+      "The site is live, and the Asia Mobility team called it superb the moment they saw it. It is brand new, so there are no long-term numbers yet. What it already does is give them a professional front door for every make they source. We will add real results here as the data comes in.",
     image: "/website-images/asia-mob-homepage.png",
+    link: "https://www.asiamobility.co.zw/",
     tags: ["web development", "vehicle sourcing", "automotive", "Zimbabwe"],
   },
   {
