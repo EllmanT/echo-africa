@@ -22,7 +22,8 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params: paramsPromise }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await paramsPromise;
   const all = await getPublishedProjects();
   const study = all.find((s) => s.slug === params.slug);
   if (!study) return {};
@@ -35,7 +36,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   });
 }
 
-const CaseStudyPage = async ({ params }: { params: { slug: string } }) => {
+const CaseStudyPage = async ({ params: paramsPromise }: { params: Promise<{ slug: string }> }) => {
+  const params = await paramsPromise;
   const [all, faqs] = await Promise.all([getPublishedProjects(), getFaqsForPage("project")]);
   const study = all.find((s) => s.slug === params.slug);
   if (!study) notFound();

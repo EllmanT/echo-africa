@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 // Middleware also guards /admin, but the layout re-checks the session so a middleware bypass cannot expose the CMS.
 export default async function ProtectedAdminLayout({ children }: { children: React.ReactNode }) {
-  if (!(await verifySessionToken(cookies().get(ADMIN_COOKIE)?.value))) redirect("/admin/login");
+  if (!(await verifySessionToken((await cookies()).get(ADMIN_COOKIE)?.value))) redirect("/admin/login");
 
   return (
     <div className="flex min-h-screen">

@@ -14,7 +14,8 @@ const schema = z.object({
   tags: z.array(z.string().max(40)).max(20).optional(),
 });
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
   const denied = await requireAdmin("PATCH");
   if (denied) return denied;
   const parsed = schema.safeParse(await request.json().catch(() => null));

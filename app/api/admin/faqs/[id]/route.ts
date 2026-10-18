@@ -14,7 +14,8 @@ const patchSchema = z.object({
   published: z.boolean().optional(),
 });
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
   const denied = await requireAdmin("PATCH");
   if (denied) return denied;
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
@@ -30,7 +31,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
   const denied = await requireAdmin("DELETE");
   if (denied) return denied;
   try {

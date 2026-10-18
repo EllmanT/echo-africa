@@ -24,7 +24,8 @@ export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params: paramsPromise }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await paramsPromise;
   const post = await getPublishedPostBySlug(params.slug);
   if (!post) return {};
 
@@ -41,7 +42,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 const formatDate = (d: string) =>
   new Date(d).toLocaleDateString("en-ZW", { year: "numeric", month: "long", day: "numeric" });
 
-const PlaybookPostPage = async ({ params }: { params: { slug: string } }) => {
+const PlaybookPostPage = async ({ params: paramsPromise }: { params: Promise<{ slug: string }> }) => {
+  const params = await paramsPromise;
   const [post, all] = await Promise.all([getPublishedPostBySlug(params.slug), getAllPublishedPosts()]);
   if (!post) notFound();
 

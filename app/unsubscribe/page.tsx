@@ -7,10 +7,10 @@ import { verifyUnsubscribeToken } from "@/lib/nurture/unsubscribe";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-type Props = { searchParams: { lead?: string; token?: string; done?: string } };
+type Props = { searchParams: Promise<{ lead?: string; token?: string; done?: string }> };
 
-const UnsubscribePage = ({ searchParams }: Props) => {
-  const { lead: leadId, token, done } = searchParams;
+const UnsubscribePage = async ({ searchParams }: Props) => {
+  const { lead: leadId, token, done } = await searchParams;
   const valid = Boolean(leadId && token && ObjectId.isValid(leadId) && verifyUnsubscribeToken(leadId, token));
   const state = done === "1" ? "done" : valid ? "confirm" : "invalid";
 

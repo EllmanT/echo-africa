@@ -5,7 +5,8 @@ import PostForm from "@/components/admin/PostForm";
 
 export const dynamic = "force-dynamic";
 
-const EditPostPage = async ({ params }: { params: { slug: string } }) => {
+const EditPostPage = async ({ params: paramsPromise }: { params: Promise<{ slug: string }> }) => {
+  const params = await paramsPromise;
   const post = await getAdminPost(params.slug);
   if (!post) notFound();
 

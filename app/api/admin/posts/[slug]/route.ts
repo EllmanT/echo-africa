@@ -18,7 +18,8 @@ const patchSchema = z.object({
   published: z.boolean().optional(),
 });
 
-export async function GET(_request: Request, { params }: { params: { slug: string } }) {
+export async function GET(_request: Request, { params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   const denied = await requireAdmin("GET");
   if (denied) return denied;
   const post = await getAdminPost(params.slug);
@@ -26,7 +27,8 @@ export async function GET(_request: Request, { params }: { params: { slug: strin
   return NextResponse.json({ ok: true, post });
 }
 
-export async function PATCH(request: Request, { params }: { params: { slug: string } }) {
+export async function PATCH(request: Request, { params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   const denied = await requireAdmin("PATCH");
   if (denied) return denied;
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
@@ -37,7 +39,8 @@ export async function PATCH(request: Request, { params }: { params: { slug: stri
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(_request: Request, { params }: { params: { slug: string } }) {
+export async function DELETE(_request: Request, { params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   const denied = await requireAdmin("DELETE");
   if (denied) return denied;
   await deleteAdminPost(params.slug);

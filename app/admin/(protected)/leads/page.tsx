@@ -8,12 +8,13 @@ export const dynamic = "force-dynamic";
 const LeadsPage = async ({
   searchParams,
 }: {
-  searchParams: { tier?: string; status?: string; q?: string };
+  searchParams: Promise<{ tier?: string; status?: string; q?: string }>;
 }) => {
+  const filters = await searchParams;
   const leads = await listLeads({
-    tier: searchParams.tier,
-    status: searchParams.status,
-    q: searchParams.q,
+    tier: filters.tier,
+    status: filters.status,
+    q: filters.q,
   });
 
   return (

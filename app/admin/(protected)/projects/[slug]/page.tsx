@@ -5,7 +5,8 @@ import ProjectForm from "@/components/admin/ProjectForm";
 
 export const dynamic = "force-dynamic";
 
-const EditProjectPage = async ({ params }: { params: { slug: string } }) => {
+const EditProjectPage = async ({ params: paramsPromise }: { params: Promise<{ slug: string }> }) => {
+  const params = await paramsPromise;
   const project = await getAdminProject(params.slug);
   if (!project) notFound();
 

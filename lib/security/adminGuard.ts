@@ -21,12 +21,12 @@ export function isCrossSite(origin: string | null, host: string | null): boolean
  * Returns a response to send back, or null when the caller may proceed.
  */
 export async function requireAdmin(method = "GET"): Promise<NextResponse | null> {
-  const token = cookies().get(ADMIN_COOKIE)?.value;
+  const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!(await verifySessionToken(token))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   if (!SAFE_METHODS.has(method)) {
-    const h = headers();
+    const h = await headers();
     if (isCrossSite(h.get("origin"), h.get("host"))) {
       return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
     }
