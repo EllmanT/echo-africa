@@ -1,6 +1,24 @@
 # Eka.dev Security Audit and Hardening Plan
 
-Status: **DRAFT for owner review. Nothing in this plan has been implemented.**
+Status (2026-10-18): **Implementation started.** Branches: `security-hardening` (Phases 1 and 3 code) and `next15-upgrade` (on top of it: Next 15.5.28 + React 19). Not pushed, not deployed.
+
+| Finding | State |
+|---|---|
+| F1 middleware bypass | Fixed: Next upgrade + per-route and layout session checks + Origin check on writes. Verified against a production build. |
+| F2 cron `Bearer undefined` | Fixed + unit tested |
+| F3 npm audit | 28 -> 8 production advisories, 0 critical. Left: Sentry v7 (Phase 4), PostCSS pinned inside Next (build-time) |
+| F4 headers | Done; CSP is **Report-Only** (enforce after a week of clean console) |
+| F5 rate limiter | Done: in-memory gate before Mongo, login fails closed, body size caps |
+| F6 client IP | Done: platform headers trusted first |
+| F7 email abuse | Partly: daily and per-address email budgets. Turnstile + verified-address flow still open |
+| F8 lead overwrite | Fixed: server-signed lead reference |
+| F9 admin auth | Partly: 7-day session, global login ceiling, audit trail, key separation. TOTP 2FA and revocation still open |
+| F10 CSV injection | Fixed + tested |
+| F11 unsubscribe GET | Fixed (confirm + POST) |
+| F12 ignoreBuildErrors / Sentry | Open (Phase 4). `tsc` is now clean, so `ignoreBuildErrors` can be switched off |
+| F13 to F17 | Open: need the mirror environment and owner actions (secret rotation, history scan, SSRF/MDX tests) |
+
+Original draft status: DRAFT for owner review.
 Date: 2026-10-18 · Stack: Next.js 14.1.4 on Vercel Hobby, MongoDB Atlas M0, Gmail SMTP, GitHub Actions cron, Anthropic API, Sentry free.
 
 ## 1. Goals
