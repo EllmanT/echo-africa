@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "vercel --prod",
+    "deploy": "node scripts/deploy-guard.mjs && vercel --prod",
     "test": "vitest run",
     "check:dashes": "node scripts/check-dashes.mjs",
     "seed": "tsx scripts/seed.ts",
