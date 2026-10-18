@@ -38,6 +38,8 @@ async function call(path, { method = "GET", body, headers = {}, cookie, ip = nex
     headers: {
       ...(body !== undefined || raw !== undefined ? { "Content-Type": "application/json" } : {}),
       "x-vercel-forwarded-for": ip,
+      "x-forwarded-for": ip, // older builds read this header instead
+      ...(process.env.VERCEL_BYPASS_TOKEN ? { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS_TOKEN } : {}),
       ...(cookie ? { cookie } : {}),
       ...headers,
     },

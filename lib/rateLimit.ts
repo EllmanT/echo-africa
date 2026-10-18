@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db/mongodb";
+import { isCloudflareIp } from "@/lib/security/cloudflare";
 
 let indexReady = false;
 
@@ -79,14 +80,19 @@ export async function allowRequest(
 /**
  * Best guess at the real client IP. On Vercel the platform sets x-vercel-forwarded-for / overwrites
  * x-forwarded-for, so those are trusted first. A caller-supplied x-forwarded-for chain is only a last resort.
+ * Behind Cloudflare, Vercel sees Cloudflare's address as the peer; the visitor is then in cf-connecting-ip,
+ * which is believed ONLY when the peer really is a Cloudflare address (otherwise anyone could forge it).
  */
 export function clientIp(headers: Headers): string {
-  const ip =
+  const peer = (
     headers.get("x-vercel-forwarded-for") ??
     headers.get("x-real-ip") ??
     headers.get("x-forwarded-for")?.split(",")[0] ??
-    "unknown";
-  return ip.trim().slice(0, 64) || "unknown";
+    "unknown"
+  ).trim();
+  const viaCloudflare = headers.get("cf-connecting-ip")?.trim();
+  const ip = viaCloudflare && isCloudflareIp(peer) ? viaCloudflare : peer;
+  return ip.slice(0, 64) || "unknown";
 }
 
 /** Reads a JSON body but refuses anything larger than maxBytes (default 16 KB). Returns null on bad or oversized input. */

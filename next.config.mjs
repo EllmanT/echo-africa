@@ -1,4 +1,4 @@
-import {withSentryConfig} from '@sentry/nextjs';
+// Sentry is not wired in yet (see the commented block at the bottom); re-enable monitoring in security phase 4.
 // Report-Only first: watch the browser console for violations for a week, then rename the header to
 // "Content-Security-Policy" to enforce. Allow-list covers GA4, Cal.com booking, Vercel Blob images.
 const csp = [
