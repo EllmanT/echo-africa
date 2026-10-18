@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -42,6 +43,8 @@ const schema = z.object({
 });
 
 export async function PUT(request: Request) {
+  const denied = await requireAdmin("PUT");
+  if (denied) return denied;
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "Check the values and try again" }, { status: 400 });

@@ -21,3 +21,12 @@ describe("unsubscribe token", () => {
     expect(verifyUnsubscribeToken("lead123", `${token}x`)).toBe(false);
   });
 });
+
+describe("legacy unsubscribe links", () => {
+  it("still accepts tokens signed directly with SESSION_SECRET", async () => {
+    process.env.SESSION_SECRET = "test-secret-not-real";
+    const { createHmac } = await import("node:crypto");
+    const legacy = createHmac("sha256", "test-secret-not-real").update("lead123").digest("hex").slice(0, 32);
+    expect(verifyUnsubscribeToken("lead123", legacy)).toBe(true);
+  });
+});

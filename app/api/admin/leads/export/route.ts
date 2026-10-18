@@ -1,9 +1,12 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { listLeads, leadsToCsv } from "@/lib/admin/leads";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const denied = await requireAdmin("GET");
+  if (denied) return denied;
   const url = new URL(request.url);
   const leads = await listLeads({
     tier: url.searchParams.get("tier") ?? undefined,

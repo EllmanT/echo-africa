@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -14,6 +15,8 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const denied = await requireAdmin("PATCH");
+  if (denied) return denied;
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false, error: "Invalid update" }, { status: 400 });
   try {
@@ -28,6 +31,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+  const denied = await requireAdmin("DELETE");
+  if (denied) return denied;
   try {
     await deleteFaq(params.id);
     revalidatePath("/work");

@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -14,6 +15,8 @@ const schema = z.object({
 });
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const denied = await requireAdmin("PATCH");
+  if (denied) return denied;
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "Invalid update" }, { status: 400 });

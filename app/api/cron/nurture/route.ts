@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/security/cron";
 
 import { runNurtureSweep } from "@/lib/nurture/sequence";
 import { NURTURE_SLOT } from "@/lib/admin/jobRuns";
@@ -10,8 +11,7 @@ export const maxDuration = 60;
 
 /** Called hourly by GitHub Actions. Sends whichever nurture step is due for each lead, at most one per lead per call. */
 export async function POST(request: Request) {
-  const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request.headers.get("authorization"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

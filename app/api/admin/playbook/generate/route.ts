@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
@@ -9,6 +10,8 @@ export const maxDuration = 120;
 
 /** The admin "Generate now" button. Ignores the daily cap (the owner asked for it on purpose) but not the monthly budget. */
 export async function POST() {
+  const denied = await requireAdmin("POST");
+  if (denied) return denied;
   const result = await generateArticle("manual");
   if (result.status === "published") {
     revalidatePath("/playbook");

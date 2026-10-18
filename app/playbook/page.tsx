@@ -75,7 +75,7 @@ const PlaybookIndexPage = async () => {
       )}
 
       {rest.length > 0 && (
-        <div className="grid gap-8 border-t border-black/[0.08] pb-24 pt-16 md:grid-cols-3">
+        <div className="grid gap-8 pb-24 md:grid-cols-3">
           {rest.map((post) => (
             <Reveal key={post.slug}>
               <Link href={`/playbook/${post.slug}`} className="group block">

@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -32,12 +33,16 @@ const patchSchema = z
   .passthrough();
 
 export async function GET(_request: Request, { params }: { params: { slug: string } }) {
+  const denied = await requireAdmin("GET");
+  if (denied) return denied;
   const project = await getAdminProject(params.slug);
   if (!project) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
   return NextResponse.json({ ok: true, project });
 }
 
 export async function PATCH(request: Request, { params }: { params: { slug: string } }) {
+  const denied = await requireAdmin("PATCH");
+  if (denied) return denied;
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "Invalid update" }, { status: 400 });
@@ -53,6 +58,8 @@ export async function PATCH(request: Request, { params }: { params: { slug: stri
 }
 
 export async function DELETE(_request: Request, { params }: { params: { slug: string } }) {
+  const denied = await requireAdmin("DELETE");
+  if (denied) return denied;
   try {
     await deleteAdminProject(params.slug);
     revalidatePath("/work");

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/security/cron";
 import { revalidatePath } from "next/cache";
 
 import { generateArticle, type GenerateResult } from "@/lib/playbook/generate";
@@ -24,8 +25,7 @@ async function alertOwner(subject: string, detail: string, notifyEmail: string) 
 
 /** Called by GitHub Actions once a day. Never touched directly by a browser. */
 export async function POST(request: Request) {
-  const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request.headers.get("authorization"))) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

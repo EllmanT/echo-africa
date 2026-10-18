@@ -1,4 +1,5 @@
 import { ObjectId, type Filter } from "mongodb";
+import { csvCell } from "@/lib/security/csv";
 
 import { getDb, requireDb } from "@/lib/db/mongodb";
 import type { LeadDoc } from "@/lib/leads/repository";
@@ -44,11 +45,6 @@ export async function updateLeadAdmin(
   await db
     .collection<LeadDoc>("leads")
     .updateOne({ _id: new ObjectId(id) as never }, { $set: { ...patch, updatedAt: new Date() } });
-}
-
-function csvCell(value: unknown): string {
-  const s = value === undefined || value === null ? "" : String(value);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 export function leadsToCsv(leads: AdminLead[]): string {

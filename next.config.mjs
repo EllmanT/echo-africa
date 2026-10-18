@@ -1,6 +1,40 @@
 import {withSentryConfig} from '@sentry/nextjs';
+// Report-Only first: watch the browser console for violations for a week, then rename the header to
+// "Content-Security-Policy" to enforce. Allow-list covers GA4, Cal.com booking, Vercel Blob images.
+const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://*.ingest.us.sentry.io",
+    "frame-src https://cal.com https://app.cal.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+].join("; ");
+
+const securityHeaders = [
+    { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+    { key: "X-Content-Type-Options", value: "nosniff" },
+    { key: "X-Frame-Options", value: "DENY" },
+    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+    { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+    { key: "Content-Security-Policy-Report-Only", value: csp },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    poweredByHeader: false,
+    async headers() {
+        return [
+            { source: "/:path*", headers: securityHeaders },
+            { source: "/api/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
+            { source: "/admin/:path*", headers: [{ key: "Cache-Control", value: "no-store" }, { key: "X-Robots-Tag", value: "noindex, nofollow" }] },
+        ];
+    },
     typescript:{
         ignoreBuildErrors:true
     },

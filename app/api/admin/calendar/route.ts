@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -25,11 +26,15 @@ const schema = z.object({
 });
 
 export async function GET() {
+  const denied = await requireAdmin("GET");
+  if (denied) return denied;
   const config = await getCalendarConfig();
   return NextResponse.json({ ok: true, config });
 }
 
 export async function PUT(request: Request) {
+  const denied = await requireAdmin("PUT");
+  if (denied) return denied;
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false, error: "Check the values and try again" }, { status: 400 });
   await saveCalendarConfig(parsed.data);

@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -23,11 +24,15 @@ const createSchema = z.object({
 });
 
 export async function GET() {
+  const denied = await requireAdmin("GET");
+  if (denied) return denied;
   const posts = await listAdminPosts();
   return NextResponse.json({ ok: true, posts });
 }
 
 export async function POST(request: Request) {
+  const denied = await requireAdmin("POST");
+  if (denied) return denied;
   const parsed = createSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "Check the required fields" }, { status: 400 });

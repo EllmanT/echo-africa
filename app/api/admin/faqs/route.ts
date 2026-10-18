@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -18,6 +19,8 @@ const createSchema = z.object({
 });
 
 export async function GET(request: Request) {
+  const denied = await requireAdmin("GET");
+  if (denied) return denied;
   const page = new URL(request.url).searchParams.get("page") as FaqPage | null;
   if (!page || !PAGES.includes(page)) {
     return NextResponse.json({ ok: false, error: "Unknown page" }, { status: 400 });
@@ -27,6 +30,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireAdmin("POST");
+  if (denied) return denied;
   const parsed = createSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false, error: "Fill in both fields" }, { status: 400 });
   const id = await createFaq(parsed.data.page, parsed.data.question, parsed.data.answer);
