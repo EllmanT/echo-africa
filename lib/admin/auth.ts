@@ -4,18 +4,21 @@ import bcrypt from "bcryptjs";
 export const ADMIN_COOKIE = "eka_admin";
 const ALG = "HS256";
 
+/** Session lifetime: 7 days (was 30), so a stolen cookie is useful for less time. */
+export const SESSION_SECONDS = 60 * 60 * 24 * 7;
+
 function secretKey() {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error("SESSION_SECRET is not configured");
   return new TextEncoder().encode(secret);
 }
 
-/** Signs a 30 day admin session token. Edge-safe (jose only). */
+/** Signs an admin session token valid for SESSION_SECONDS. Edge-safe (jose only). */
 export async function createSessionToken(): Promise<string> {
   return new SignJWT({ role: "owner" })
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
-    .setExpirationTime("30d")
+    .setExpirationTime(`${SESSION_SECONDS}s`)
     .sign(secretKey());
 }
 

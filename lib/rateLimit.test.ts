@@ -1,0 +1,30 @@
+import { describe, expect, it } from "vitest";
+
+import { allowRequest, clientIp, readJsonLimited } from "./rateLimit";
+
+describe("allowRequest (no database configured)", () => {
+  it("blocks after the limit using the in-memory layer", async () => {
+    const key = `test:${Math.random()}`;
+    const results = [];
+    for (let i = 0; i < 6; i++) results.push(await allowRequest(key, 3, 60, { shared: false }));
+    expect(results).toEqual([true, true, true, false, false, false]);
+  });
+});
+
+describe("clientIp", () => {
+  it("prefers platform-set headers over a caller-supplied forwarded chain", () => {
+    const h = new Headers({ "x-forwarded-for": "6.6.6.6", "x-vercel-forwarded-for": "1.2.3.4" });
+    expect(clientIp(h)).toBe("1.2.3.4");
+  });
+});
+
+describe("readJsonLimited", () => {
+  const post = (body: string, headers: Record<string, string> = {}) =>
+    new Request("http://x.test", { method: "POST", body, headers });
+
+  it("parses small bodies and rejects oversized or invalid ones", async () => {
+    expect(await readJsonLimited(post('{"a":1}'))).toEqual({ a: 1 });
+    expect(await readJsonLimited(post("x".repeat(2000)), 1000)).toBeNull();
+    expect(await readJsonLimited(post("not json"))).toBeNull();
+  });
+});

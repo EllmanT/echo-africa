@@ -8,18 +8,20 @@ import { getPricingConfig } from "@/lib/content/pricing";
 import { getAdminSettings } from "@/lib/admin/settings";
 import { leadConfirmationEmail, ownerNotificationEmail } from "@/lib/email/templates";
 import { sendMail } from "@/lib/email/send";
-import { allowRequest, clientIp } from "@/lib/rateLimit";
+import { allowRequest, clientIp, readJsonLimited } from "@/lib/rateLimit";
+import { parseLeadRef, signLeadRef } from "@/lib/leads/leadRef";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MIN_FILL_TIME_MS = 2500;
+const OWNER_MAILS_PER_DAY = 150;
+const CONFIRM_MAILS_PER_DAY = 200;
+const CONFIRM_MAILS_PER_ADDRESS_PER_DAY = 2;
 
 export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
+  const body = await readJsonLimited(request);
+  if (body === null) {
     return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
   }
 
@@ -31,6 +33,8 @@ export async function POST(request: Request) {
     );
   }
   const req = parsed.data;
+  // Only a reference this server signed can update an existing lead; anything else starts a new one.
+  const existingLeadId = parseLeadRef(req.leadId);
 
   const ip = clientIp(request.headers);
   if (!(await allowRequest(`lead:${ip}`, 20, 3600))) {
@@ -40,12 +44,12 @@ export async function POST(request: Request) {
   // Step 2 of the form: contact details captured, lead saved as "partial".
   if (req.stage === "partial") {
     try {
-      const leadId = await upsertLead(req.leadId, {
+      const leadId = await upsertLead(existingLeadId, {
         ...req.data,
         status: "partial",
         source: req.source,
       });
-      return NextResponse.json({ ok: true, leadId });
+      return NextResponse.json({ ok: true, leadId: signLeadRef(leadId) });
     } catch (error) {
       console.error("[leads] partial save failed:", error instanceof Error ? error.message : error);
       // Never block the visitor: the final submit still emails the owner.
@@ -74,7 +78,7 @@ export async function POST(request: Request) {
 
   let leadId: string | null = null;
   try {
-    leadId = await upsertLead(req.leadId, {
+    leadId = await upsertLead(existingLeadId, {
       ...req.data,
       status: tier === "nurture" ? "nurture" : "new",
       tier,
@@ -91,9 +95,20 @@ export async function POST(request: Request) {
     console.error("[leads] save failed:", error instanceof Error ? error.message : error);
   }
 
+  // Email budgets: the lead is always saved, but a flood must not turn this form into a mail cannon
+  // (sender reputation) or use up the SMTP daily cap that the owner alerts depend on.
+  const ownerBudgetOk = await allowRequest("mail:owner", OWNER_MAILS_PER_DAY, 86400);
+  const confirmBudgetOk =
+    (await allowRequest("mail:confirm", CONFIRM_MAILS_PER_DAY, 86400)) &&
+    (await allowRequest(`mail:to:${req.data.email}`, CONFIRM_MAILS_PER_ADDRESS_PER_DAY, 86400));
+
   const [ownerOk, leadOk] = await Promise.all([
-    sendMail(ownerNotificationEmail(req.data, tier, score, `${picked.tier.name}, ${budgetLabel}`, adminSettings.notifyEmail)),
-    sendMail(leadConfirmationEmail(req.data, tier, { leadId: leadId ?? undefined, booking, budgetLabel, tierName: picked.tier.name })),
+    ownerBudgetOk
+      ? sendMail(ownerNotificationEmail(req.data, tier, score, `${picked.tier.name}, ${budgetLabel}`, adminSettings.notifyEmail))
+      : Promise.resolve(false),
+    confirmBudgetOk
+      ? sendMail(leadConfirmationEmail(req.data, tier, { leadId: leadId ?? undefined, booking, budgetLabel, tierName: picked.tier.name }))
+      : Promise.resolve(false),
   ]);
 
   if (leadId) {
@@ -103,5 +118,5 @@ export async function POST(request: Request) {
     ]);
   }
 
-  return NextResponse.json({ ok: true, leadId, tier, booking });
+  return NextResponse.json({ ok: true, leadId: leadId ? signLeadRef(leadId) : null, tier, booking });
 }

@@ -3,38 +3,44 @@ import Link from "next/link";
 import { ObjectId } from "mongodb";
 
 import PageShell from "@/components/PageShell";
-import { requireDb } from "@/lib/db/mongodb";
 import { verifyUnsubscribeToken } from "@/lib/nurture/unsubscribe";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-const UnsubscribePage = async ({ searchParams }: { searchParams: { lead?: string; token?: string } }) => {
-  const { lead: leadId, token } = searchParams;
-  const valid = Boolean(leadId && token && ObjectId.isValid(leadId) && verifyUnsubscribeToken(leadId, token));
+type Props = { searchParams: { lead?: string; token?: string; done?: string } };
 
-  if (valid && leadId) {
-    try {
-      const db = await requireDb();
-      await db.collection("leads").updateOne({ _id: new ObjectId(leadId) }, { $set: { unsubscribed: true } });
-    } catch {
-      // If storage is down, we still show the confirmation: the visitor's intent is honored either way.
-    }
-  }
+const UnsubscribePage = ({ searchParams }: Props) => {
+  const { lead: leadId, token, done } = searchParams;
+  const valid = Boolean(leadId && token && ObjectId.isValid(leadId) && verifyUnsubscribeToken(leadId, token));
+  const state = done === "1" ? "done" : valid ? "confirm" : "invalid";
+
+  const heading = { done: "You're unsubscribed", confirm: "Unsubscribe from follow-up emails?", invalid: "That link didn't work" }[state];
+  const body = {
+    done: "You won't get any more follow-up emails from us. If you change your mind, just reach out.",
+    confirm: "Press the button and we'll stop the follow-up emails straight away.",
+    invalid: "This unsubscribe link looks broken or expired. Message us and we'll take care of it directly.",
+  }[state];
 
   return (
     <PageShell showCta={false}>
       <div className="mx-auto max-w-lg py-24 text-center">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-          {valid ? "You're unsubscribed" : "That link didn't work"}
-        </h1>
-        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-          {valid
-            ? "You won't get any more follow-up emails from us. If you change your mind, just reach out."
-            : "This unsubscribe link looks broken or expired. Message us and we'll take care of it directly."}
-        </p>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight md:text-4xl">{heading}</h1>
+        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{body}</p>
+        {state === "confirm" && leadId && token && (
+          <form method="post" action="/api/unsubscribe" className="mt-8">
+            <input type="hidden" name="lead" value={leadId} />
+            <input type="hidden" name="token" value={token} />
+            <button
+              type="submit"
+              className="inline-flex h-11 items-center rounded-full bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-purple"
+            >
+              Yes, unsubscribe me
+            </button>
+          </form>
+        )}
         <Link
           href="/contact"
-          className="mt-8 inline-flex h-11 items-center rounded-full bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-purple"
+          className="mt-8 inline-flex h-11 items-center rounded-full px-6 text-sm font-medium text-foreground/70 transition-colors hover:text-purple"
         >
           Back to Eka
         </Link>
