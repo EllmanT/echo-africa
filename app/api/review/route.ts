@@ -1,0 +1,132 @@
+import { NextResponse } from "next/server";
+
+import { getAdminSettings } from "@/lib/admin/settings";
+import { reviewEmail, reviewOwnerEmail } from "@/lib/email/review-template";
+import { sendMail } from "@/lib/email/send";
+import { upsertLead } from "@/lib/leads/repository";
+import { signLeadRef } from "@/lib/leads/leadRef";
+import { allowRequest, clientIp, readJsonLimited } from "@/lib/rateLimit";
+import { reviewEnabled, reviewHasBudget, recordReviewUsage } from "@/lib/review/budget";
+import { generateReview, type Review } from "@/lib/review/generate";
+import { hostLabel, normalizeSiteUrl, reviewRequestSchema } from "@/lib/review/schema";
+import { extractSiteFacts, unreadableFacts } from "@/lib/review/siteFacts";
+import { isPublicHttpUrl, fetchPublicText } from "@/lib/security/safeUrl";
+import { verifyTurnstile } from "@/lib/security/turnstile";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 45;
+
+const MIN_FILL_TIME_MS = 3000;
+/** Limits that protect the AI bill and the mailbox. Per IP, per address, and for the whole site per day. */
+const PER_IP_PER_DAY = 3;
+const PER_EMAIL_PER_DAY = 2;
+const GLOBAL_PER_DAY = 40;
+const REVIEW_MAILS_PER_DAY = 80;
+
+/** The visitor is always told their request arrived; when the AI path is closed a human replies instead. */
+const queued = (extra: Record<string, unknown> = {}) => NextResponse.json({ ok: true, queued: true, ...extra });
+
+export async function POST(request: Request) {
+  const body = await readJsonLimited(request, 4096);
+  if (body === null) return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
+
+  const parsed = reviewRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: "Some answers are missing or invalid", issues: parsed.error.flatten().fieldErrors }, { status: 400 });
+  }
+  const req = parsed.data;
+
+  // Bots: honeypot filled or submitted implausibly fast. Pretend it worked, spend nothing.
+  if (req.company || req.elapsedMs < MIN_FILL_TIME_MS) return queued();
+
+  const ip = clientIp(request.headers);
+  // Every AI call costs money, so the limits fail closed: if the counter is unreachable, nobody gets a review.
+  const allowed =
+    (await allowRequest(`review:ip:${ip}`, PER_IP_PER_DAY, 86400, { failClosed: true })) &&
+    (await allowRequest(`review:to:${req.email}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
+    (await allowRequest("review:all", GLOBAL_PER_DAY, 86400, { failClosed: true }));
+  if (!allowed) {
+    return NextResponse.json({ ok: false, error: "You have used today's free reviews. Start a project instead and we will reply personally." }, { status: 429 });
+  }
+
+  const human = await verifyTurnstile(req.turnstileToken, { action: "review", ip, failOpen: false });
+  if (!human.ok) {
+    return NextResponse.json({ ok: false, error: "We could not confirm you are human. Please reload the page and try again." }, { status: 400 });
+  }
+
+  // Resolve what is being reviewed. A site address must be a public one: nothing internal is ever fetched.
+  let target = "";
+  let siteUrl: string | null = null;
+  if (req.mode === "site") {
+    siteUrl = normalizeSiteUrl(req.url ?? "");
+    if (!siteUrl || !isPublicHttpUrl(siteUrl)) {
+      return NextResponse.json({ ok: false, error: "Enter your website address, like yourbusiness.co.zw", issues: { url: ["Enter a valid public website address"] } }, { status: 400 });
+    }
+    target = siteUrl;
+  } else {
+    target = (req.process ?? "").slice(0, 600);
+  }
+
+  const [settings, aiOpen] = await Promise.all([getAdminSettings(), reviewEnabled() ? reviewHasBudget() : Promise.resolve(false)]);
+
+  // Try the AI path. Any failure falls through to the human-reply path below, so a visitor is never left hanging.
+  let review: Review | undefined;
+  if (aiOpen && process.env.ANTHROPIC_API_KEY) {
+    try {
+      let result;
+      if (req.mode === "site" && siteUrl) {
+        const page = await fetchPublicText(siteUrl, { timeoutMs: 8000, maxBytes: 600_000, headers: { "user-agent": "Mozilla/5.0 (compatible; EkaReviewBot/1.0; +https://www.eka.dev)" } });
+        // Could not connect at all (typo, no such domain, timeout): say so now instead of queuing work for a human.
+        if (!page) {
+          return NextResponse.json(
+            { ok: false, error: "We could not open that address. Check the spelling and try again.", issues: { url: ["We could not open this address"] } },
+            { status: 400 }
+          );
+        }
+        // Reachable but blocked or an error page: the AI is told plainly that nothing could be read.
+        const facts = page.ok ? extractSiteFacts(page.text, siteUrl) : unreadableFacts(siteUrl);
+        result = await generateReview({ mode: "site", facts });
+      } else {
+        result = await generateReview({ mode: "process", description: req.process ?? "" });
+      }
+      review = result.review;
+      await recordReviewUsage(result.costUsd, true);
+    } catch (error) {
+      console.error("[review] generation failed:", error instanceof Error ? error.message : error);
+      await recordReviewUsage(0, false);
+    }
+  }
+
+  // The visitor becomes a lead either way, so the nurture emails and the admin list pick them up.
+  let leadId: string | null = null;
+  try {
+    leadId = await upsertLead(undefined, {
+      name: req.name,
+      email: req.email,
+      businessName: req.mode === "site" && siteUrl ? hostLabel(siteUrl) : "Free review (process)",
+      services: [req.mode === "site" ? "website" : "ai-automation"],
+      website: req.mode === "site" ? target : "",
+      notes: `Free review (${req.mode}): ${target}`.slice(0, 700),
+      status: "nurture",
+      tier: "nurture",
+      source: `free-review${req.source ? `:${req.source}` : ""}`.slice(0, 100),
+      completedAt: new Date(),
+    });
+  } catch (error) {
+    console.error("[review] lead save failed:", error instanceof Error ? error.message : error);
+  }
+
+  // Mail budgets: owner alerts are never starved by visitor mail, and visitor mail has its own daily ceiling.
+  const visitorMailOk = review ? await allowRequest("mail:review", REVIEW_MAILS_PER_DAY, 86400) : false;
+  const ownerSubject = review ? `Free review sent: ${req.name}` : `Free review needs a human reply: ${req.name}`;
+  const [emailed] = await Promise.all([
+    review && visitorMailOk
+      ? sendMail(reviewEmail({ name: req.name, email: req.email, mode: req.mode, review, leadId: leadId ?? undefined }))
+      : Promise.resolve(false),
+    sendMail(reviewOwnerEmail({ to: settings.notifyEmail, name: req.name, email: req.email, mode: req.mode, subject: ownerSubject, target, review, leadId: leadId ?? undefined })),
+  ]);
+
+  if (!review) return queued({ leadRef: leadId ? signLeadRef(leadId) : null });
+  return NextResponse.json({ ok: true, queued: false, review, emailed, leadRef: leadId ? signLeadRef(leadId) : null });
+}

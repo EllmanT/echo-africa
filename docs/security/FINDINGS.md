@@ -30,10 +30,16 @@ Note on the unpatched build: the admin bypass (A1 to A3) was reproduced on a sel
 | ID | Item | Needs |
 |---|---|---|
 | F3 | 8 production `npm audit` advisories remain (Sentry v7, PostCSS pinned in Next). `main`'s `package-lock.json` is out of sync with `package.json` (`npm ci` fails) | Sentry upgrade with monitoring re-enable; lockfile now fixed on the Next 15 branch |
-| F7b | Bot challenge (Turnstile) on the lead form; send confirmation only to verified addresses | Cloudflare Turnstile site key |
+| F7b | Turnstile is built and tested (lead form + free review); still needs the two env vars set in Vercel Production | Owner: add env vars, rotate the secret that was pasted in chat |
 | F9b | TOTP 2FA, session revocation | Owner decision |
 | F12 | `typescript.ignoreBuildErrors` still on (tsc is clean, safe to turn off); Sentry disabled | Phase 4 |
 | F13 | Secrets reused between `eka` and `frg` projects; the test Mongo password was shared in chat | Rotate (see SETUP_GUIDE) |
 | F17 | Secret scan of full git history | `gitleaks` run |
 | CSP | Report-Only, not enforced | A week of clean console |
 | Infra | Vercel preview env vars share production values (DB, SMTP, secrets) | Branch-scoped overrides (SETUP_GUIDE) |
+
+## Round 2 additions (2026-10-18)
+
+- Free review endpoint (`/api/review`): 17 attack checks (R1 to R9, T1 to T4) cover oversized bodies, SSRF addresses, bots, per-IP, per-email and global caps, and a missing Turnstile token. All pass. Suite total: **43 / 43**.
+- Live model checks: prompt-injection text inside the visitor input did not change the output (no persona change, no prompt leak, no link, no invented price). Thin and unreadable sites get honest answers. Typo addresses are refused before any AI spend.
+- Prompt was tightened after review 1 invented a timeline ("these fixes take a day"): no timelines, guarantees or uncited figures.

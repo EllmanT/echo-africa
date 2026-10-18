@@ -240,6 +240,56 @@ if (ADMIN_PW) {
   console.log("SKIP  S1-S5, M1  (set ADMIN_PW to run the authenticated tests)");
 }
 
+// ---------------------------------------------------------------- free review (AI) endpoint
+{
+  const rv = (over = {}) => ({
+    mode: "site", name: "Review Tester", email: `rv+${Math.random().toString(36).slice(2)}@example.com`, url: "https://example.com",
+    source: "attack-suite", elapsedMs: 9000, company: "", turnstileToken: "suite-token", ...over,
+  });
+  const big = await call("/api/review", { method: "POST", raw: JSON.stringify({ ...rv(), url: "a".repeat(6000) }) });
+  check("R1", "Oversized review request is refused", big.status === 400, String(big.status));
+
+  const bad = [];
+  for (const url of ["http://169.254.169.254/latest/meta-data", "http://localhost:3000", "http://127.0.0.1", "http://[::1]/", "file:///etc/passwd", "http://10.0.0.5", "http://2130706433", "ftp://example.com"]) {
+    const r = await call("/api/review", { method: "POST", body: rv({ url }) });
+    if (r.status !== 400) bad.push(`${url} -> ${r.status}`);
+  }
+  check("R2", "Internal, loopback, metadata and non-http addresses are refused before any fetch", bad.length === 0, bad.join("; "));
+
+  const short = await call("/api/review", { method: "POST", body: rv({ mode: "process", url: "", process: "too short" }) });
+  check("R3", "A process description under 20 characters is refused", short.status === 400, String(short.status));
+
+  const before = await db.collection("leads").countDocuments({ source: /^free-review/ });
+  const hp = await call("/api/review", { method: "POST", body: rv({ company: "bot" }) });
+  const fast = await call("/api/review", { method: "POST", body: rv({ elapsedMs: 200 }) });
+  const after = await db.collection("leads").countDocuments({ source: /^free-review/ });
+  check("R4", "Honeypot and too-fast submissions are dropped silently (no lead, no AI call)", hp.json?.queued === true && fast.json?.queued === true && after === before, `before=${before} after=${after}`);
+
+  if (process.env.EXPECT_TURNSTILE) {
+    const nt = await call("/api/review", { method: "POST", body: { ...rv(), turnstileToken: undefined } });
+    check("R9", "Review without a Turnstile token is refused (AI endpoints never fail open)", nt.status === 400, String(nt.status));
+  }
+
+  const ipX = "203.0.113.150";
+  const codes = [];
+  for (let i = 0; i < 5; i++) codes.push((await call("/api/review", { method: "POST", ip: ipX, body: rv() })).status);
+  check("R5", "One IP gets at most 3 reviews a day, then 429", codes.slice(0, 3).every((c) => c === 200) && codes.slice(3).every((c) => c === 429), codes.join(","));
+
+  const sameEmail = `same+${Date.now()}@example.com`;
+  const ec = [];
+  for (let i = 0; i < 4; i++) ec.push((await call("/api/review", { method: "POST", body: rv({ email: sameEmail }) })).status);
+  check("R6", "One email address gets at most 2 reviews a day (stops mailbox bombing), then 429", ec.slice(0, 2).every((c) => c === 200) && ec.slice(2).every((c) => c === 429), ec.join(","));
+
+  const g = [];
+  for (let i = 0; i < 45; i++) g.push((await call("/api/review", { method: "POST", body: rv() })).status);
+  const gOk = g.filter((c) => c === 200).length;
+  check("R7", "Site-wide daily ceiling (40) stops a distributed flood from spending the AI budget", gOk <= 40 && g.slice(-3).every((c) => c === 429), `200s=${gOk} 429s=${g.filter((c) => c === 429).length}`);
+
+  const doc = await db.collection("leads").findOne({ source: /^free-review/ }, { sort: { createdAt: -1 } });
+  check("R8", "A review request becomes a nurture lead with its source recorded", doc?.status === "nurture" && /^free-review/.test(doc?.source ?? "") && !!doc?.email, JSON.stringify({ status: doc?.status, source: doc?.source }));
+
+}
+
 // ---------------------------------------------------------------- abuse and DoS (run last: they trip limits)
 {
   const ip = "203.0.113.77";

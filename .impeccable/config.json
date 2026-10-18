@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "lib/review/siteFacts.ts"
+        ],
+        "createdAt": "2026-10-18T10:56:09.684Z",
+        "reason": "Claude: false positive, the match is a server-side regex that parses img tags from a visitor's HTML, not rendered UI"
+      }
+    ]
+  }
+}

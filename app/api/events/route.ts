@@ -15,6 +15,8 @@ const ALLOWED = [
   "lead_nurture",
   "booking_click",
   "whatsapp_click",
+  "review_start",
+  "review_done",
 ] as const;
 
 const eventSchema = z.object({

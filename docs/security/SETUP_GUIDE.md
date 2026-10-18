@@ -58,3 +58,19 @@ The CSP is deliberately not enforced yet. The browser only reports what it *woul
 ## 6. Rotate after testing
 - Atlas: delete or change the password of the test DB user (it was shared in chat) and scope any new user to `eka_test` only.
 - Reused credentials between `eka` and `frg` (Gmail app password, Anthropic key, Mongo cluster): give each project its own.
+
+## 7. Turnstile and the free review: environment variables
+
+Set these in Vercel > Settings > Environment Variables, **Production** only (not Preview: Turnstile only accepts the hostnames you registered, so previews skip the check when the secret is unset).
+
+| Name | Value | Notes |
+|---|---|---|
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | your public site key | Build-time: redeploy after adding |
+| `TURNSTILE_SECRET_KEY` | your secret key | Secret. **The one pasted in chat should be rotated:** Cloudflare > Turnstile > your widget > Settings > Rotate secret key, then put the new value in Vercel |
+| `TURNSTILE_HOSTNAMES` | `www.eka.dev,eka.dev` | Optional; this is the default |
+| `REVIEW_MONTHLY_BUDGET_USD` | `2` | Optional AI spend cap for free reviews (default 2). `0` turns the AI off |
+| `REVIEW_ENABLED` | `false` | Optional kill switch. Visitors then get the "Tapiwa will reply" path |
+
+Limits built in (see `app/api/review/route.ts`): 3 reviews per IP per day, 2 per email per day, 40 site-wide per day, monthly spend cap, 4 KB request limit, honeypot and timing check, Turnstile required, only public websites are fetched. Measured cost: about 0.34 US cents per review on Claude Haiku 4.5.
+
+Test keys for local work (Cloudflare's published ones, never use in production): site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (always passes); secret `2x0000000000000000000000000000000AA` always fails.

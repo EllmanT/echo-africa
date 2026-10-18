@@ -30,6 +30,7 @@ const columns = [
     links: [
       { name: "The Playbook", href: "/playbook" },
       { name: "Website Launch Checklist", href: "/resources/launch-checklist" },
+      { name: "Free website review", href: "/free-review" },
       { name: "Questions and answers", href: "/contact#faq" },
     ],
   },

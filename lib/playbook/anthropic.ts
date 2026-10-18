@@ -70,7 +70,7 @@ export type AnthropicMessage = {
   usage?: Usage;
 };
 
-async function callAnthropic(body: Record<string, unknown>, meter?: CostMeter): Promise<AnthropicMessage> {
+async function callAnthropic(body: Record<string, unknown>, meter?: CostMeter, timeoutMs?: number): Promise<AnthropicMessage> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("ANTHROPIC_API_KEY is not configured");
 
@@ -78,6 +78,7 @@ async function callAnthropic(body: Record<string, unknown>, meter?: CostMeter): 
     method: "POST",
     headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
     body: JSON.stringify({ model: PLAYBOOK_MODEL, ...body }),
+    ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
   });
 
   if (!res.ok) {
@@ -132,16 +133,19 @@ export async function generateStructured<T>(
   prompt: string,
   toolName: string,
   inputSchema: Record<string, unknown>,
-  meter?: CostMeter
+  meter?: CostMeter,
+  opts: { system?: string; maxTokens?: number; timeoutMs?: number } = {}
 ): Promise<T> {
   const message = await callAnthropic(
     {
-      max_tokens: 3000,
+      max_tokens: opts.maxTokens ?? 3000,
+      ...(opts.system ? { system: opts.system } : {}),
       messages: [{ role: "user", content: prompt }],
       tools: [{ name: toolName, description: `Submit the ${toolName} result.`, input_schema: inputSchema }],
       tool_choice: { type: "tool", name: toolName },
     },
-    meter
+    meter,
+    opts.timeoutMs
   );
 
   const toolUse = message.content.find(

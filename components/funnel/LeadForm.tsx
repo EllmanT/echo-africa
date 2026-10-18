@@ -126,6 +126,8 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
     const wanted = new URLSearchParams(window.location.search).get("service");
     if (wanted && wanted !== "not-sure" && (SERVICES as readonly string[]).includes(wanted)) {
       form.setValue("services", [wanted as Service]);
+      // Question 1 is already answered, so start on question 2 (Back still lets them change it).
+      setStep((s) => (s === 0 ? 1 : s));
     }
   }, [form]);
 

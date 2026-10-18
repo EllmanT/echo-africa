@@ -5,6 +5,8 @@ import Grid from "@/components/Grid";
 import Footer from "@/components/Footer";
 import Clients from "@/components/Clients";
 import Approach from "@/components/Approach";
+import ServicePicker from "@/components/ServicePicker";
+import FreeReviewSection from "@/components/FreeReviewSection";
 import RecentProjects from "@/components/RecentProjects";
 import SiteHeader from "@/components/SiteHeader";
 import JsonLd from "@/components/seo/JsonLd";
@@ -35,10 +37,12 @@ const Home = () => {
         <JsonLd data={buildFAQSchema(homeFaqs)} />
         <SiteHeader />
         <Hero />
+        <ServicePicker />
         <Grid />
         <RecentProjects />
         <Clients />
         <Approach />
+        <FreeReviewSection />
         <Footer />
       </div>
     </main>
