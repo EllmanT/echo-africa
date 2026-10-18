@@ -61,6 +61,8 @@ export const leadRequestSchema = z.discriminatedUnion("stage", [
     elapsedMs: z.number().int().nonnegative(),
     /** Honeypot: real people never fill this in. */
     company: z.string().max(200).optional(),
+    /** Cloudflare Turnstile token from the final step. Checked server-side when Turnstile is configured. */
+    turnstileToken: z.string().max(2048).optional(),
   }),
 ]);
 

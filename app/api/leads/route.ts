@@ -9,6 +9,7 @@ import { getAdminSettings } from "@/lib/admin/settings";
 import { leadConfirmationEmail, ownerNotificationEmail } from "@/lib/email/templates";
 import { sendMail } from "@/lib/email/send";
 import { allowRequest, clientIp, readJsonLimited } from "@/lib/rateLimit";
+import { verifyTurnstile } from "@/lib/security/turnstile";
 import { parseLeadRef, signLeadRef } from "@/lib/leads/leadRef";
 
 export const runtime = "nodejs";
@@ -60,6 +61,12 @@ export async function POST(request: Request) {
   // Bots: honeypot filled or finished implausibly fast. Pretend it worked.
   if (req.company || req.elapsedMs < MIN_FILL_TIME_MS) {
     return NextResponse.json({ ok: true, leadId: null, tier: "nurture" });
+  }
+
+  // Bot check. Lead capture fails open if Cloudflare itself is down (the other limits still apply), but a missing or bad token is refused.
+  const human = await verifyTurnstile(req.turnstileToken, { action: "lead", ip, failOpen: true });
+  if (!human.ok) {
+    return NextResponse.json({ ok: false, error: "We could not confirm you are human. Please reload the page and try again." }, { status: 400 });
   }
 
   const [pricing, adminSettings] = await Promise.all([getPricingConfig(), getAdminSettings()]);

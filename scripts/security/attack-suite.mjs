@@ -58,6 +58,7 @@ const complete = (over = {}, data = {}) => ({
   source: "attack-suite",
   elapsedMs: 9000,
   company: "",
+  turnstileToken: "suite-token",
   data: {
     services: ["website"],
     name: "Test Person",
@@ -175,6 +176,19 @@ const partial = (data = {}, over = {}) => ({
 
   const bot = await call("/api/leads", { method: "POST", body: complete({ company: "I am a bot" }) });
   check("L6", "Honeypot submissions are silently dropped (no lead stored)", bot.json?.leadId === null, JSON.stringify(bot.json));
+}
+
+// ---------------------------------------------------------------- bot check (only when the target has Turnstile configured)
+if (process.env.EXPECT_TURNSTILE) {
+  const mode = process.env.EXPECT_TURNSTILE; // "pass" = Cloudflare always-pass test secret, "fail" = always-fail test secret
+  const noTok = await call("/api/leads", { method: "POST", body: { ...complete({}, { email: `ts+none+${Date.now()}@example.com` }), turnstileToken: undefined } });
+  check("T1", "Final lead submit without a Turnstile token is refused", noTok.status === 400, String(noTok.status));
+  const huge = await call("/api/leads", { method: "POST", body: { ...complete({}, { email: `ts+huge+${Date.now()}@example.com` }), turnstileToken: "x".repeat(5000) } });
+  check("T2", "Oversized Turnstile token is refused", huge.status === 400, String(huge.status));
+  const tok = await call("/api/leads", { method: "POST", body: complete({}, { email: `ts+tok+${Date.now()}@example.com` }) });
+  check("T3", mode === "pass" ? "A token Cloudflare accepts lets the lead through" : "A token Cloudflare rejects is refused", mode === "pass" ? tok.status === 200 && tok.json?.ok : tok.status === 400, String(tok.status));
+  const part = await call("/api/leads", { method: "POST", body: partial({ email: `ts+partial+${Date.now()}@example.com` }) });
+  check("T4", "Partial saves do not need a token (no email, no cost)", part.status === 200, String(part.status));
 }
 
 // ---------------------------------------------------------------- stored XSS / CSV injection

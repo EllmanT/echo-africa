@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FaArrowLeft, FaArrowRight, FaWhatsapp } from "react-icons/fa6";
 
+import TurnstileWidget, { TURNSTILE_SITE_KEY } from "@/components/security/TurnstileWidget";
 import ChoiceTile from "./ChoiceTile";
 import LeadResult from "./LeadResult";
 import PricingStep from "./PricingStep";
@@ -96,6 +97,8 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
   const [direction, setDirection] = useState(1);
   const [leadId, setLeadId] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
+  const [humanToken, setHumanToken] = useState<string | null>(null);
+  const [humanReset, setHumanReset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const startedAt = useRef<number | null>(null);
@@ -227,6 +230,7 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
         data: values,
         elapsedMs: startedAt.current ? Date.now() - startedAt.current : 0,
         company: honeypot,
+        turnstileToken: humanToken ?? undefined,
       });
       const tier = done.tier ?? "nurture";
       track("form_complete");
@@ -245,6 +249,8 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+      // Turnstile tokens are single use: get a fresh one for the retry.
+      setHumanReset((n) => n + 1);
     } finally {
       setBusy(false);
     }
@@ -556,6 +562,8 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
                   </div>
                 )}
 
+                {isLast && <TurnstileWidget action="lead" onToken={setHumanToken} resetSignal={humanReset} />}
+
                 <div className="mt-9 flex items-center gap-3">
                   {step > 0 && (
                     <button
@@ -568,7 +576,7 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
                   )}
                   <button
                     type="submit"
-                    disabled={busy}
+                    disabled={busy || (isLast && Boolean(TURNSTILE_SITE_KEY) && !humanToken)}
                     className={cn(
                       "group inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground px-8 text-base font-medium text-background sm:flex-none",
                       "transition-[background-color,transform,opacity] duration-200 ease-out-strong hover:bg-purple active:scale-[0.97] disabled:opacity-60"
