@@ -5,7 +5,7 @@ export const navItems = [
   { name: "About", link: "/about" },
 ];
 
-export const headerCta = { name: "Let's Connect", link: "/contact" };
+export const headerCta = { name: "Let's Connect", link: "/contact?from=header#start" };
 
 export const gridItems = [
   {

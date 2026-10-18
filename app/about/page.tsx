@@ -186,7 +186,7 @@ const AboutPage = () => {
             Tell us what you need. We build it first, and you pay only when you love it.
           </p>
           <Link
-            href="/contact"
+            href="/contact?from=about#start"
             className="group mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-foreground px-8 text-base font-medium text-background transition-[background-color,transform] duration-200 ease-out-strong hover:bg-purple active:scale-[0.97]"
           >
             Start the conversation

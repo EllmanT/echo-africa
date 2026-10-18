@@ -72,6 +72,22 @@ const STEPS = [
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
+/** Which button or page sent this visitor to the form: the ?from= tag on the CTA, else the referring page, else "direct". */
+function leadSource(): string {
+  try {
+    const from = new URLSearchParams(window.location.search).get("from");
+    if (from) return from.replace(/[^a-z0-9_-]/gi, "").slice(0, 60) || "direct";
+    if (document.referrer) {
+      const ref = new URL(document.referrer);
+      if (ref.host === window.location.host) return `page:${ref.pathname}`.slice(0, 100);
+      return `ext:${ref.host}`.slice(0, 100);
+    }
+  } catch {
+    // Fall through.
+  }
+  return "direct";
+}
+
 type Result = { tier: LeadTier; name: string; email: string; businessName: string; booking: boolean; needs: string };
 
 const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
@@ -183,7 +199,7 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
         const saved = await post({
           stage: "partial",
           leadId,
-          source: window.location.pathname,
+          source: leadSource(),
           data: { services: v.services, name: v.name, email: v.email, whatsapp: v.whatsapp },
         });
         if (saved.leadId) setLeadId(saved.leadId);
@@ -207,7 +223,7 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
       const done = await post({
         stage: "complete",
         leadId,
-        source: window.location.pathname,
+        source: leadSource(),
         data: values,
         elapsedMs: startedAt.current ? Date.now() - startedAt.current : 0,
         company: honeypot,

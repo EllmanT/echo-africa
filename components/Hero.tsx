@@ -108,7 +108,7 @@ const Hero = () => {
             .
           </p>
           <div className="flex gap-2">
-            <Link href="/contact">
+            <Link href="/contact?from=home-hero#start">
               <MagicButton
                 title="Start for Free"
                 icon={<FaLocationArrow />}

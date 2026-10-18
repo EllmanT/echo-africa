@@ -38,7 +38,7 @@ const columns = [
     links: [
       { name: "About", href: "/about" },
       { name: "Contact", href: "/contact" },
-      { name: "Start a project", href: "/contact" },
+      { name: "Start a project", href: "/contact?from=footer#start" },
     ],
   },
 ];

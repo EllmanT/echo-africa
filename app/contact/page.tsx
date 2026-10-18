@@ -72,7 +72,7 @@ const ContactPage = async () => {
       </div>
 
       <section className="mx-auto grid max-w-6xl gap-14 py-16 md:py-24 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-20">
-        <div className="relative">
+        <div id="start" className="relative scroll-mt-24">
           <LeadForm pricing={pricing} />
         </div>
 

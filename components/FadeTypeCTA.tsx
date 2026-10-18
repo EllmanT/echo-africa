@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa6";
 
@@ -13,7 +14,7 @@ const FadeTypeCTA = ({
   heading = "Ready to get your business online, properly?",
   sub = "Start for free. Pay only when you love it. No upfront fee.",
   buttonLabel = "Start the conversation",
-  href = "/contact",
+  href,
   bigLines = ["Pay only", "when you love it."],
 }: {
   heading?: string;
@@ -23,6 +24,9 @@ const FadeTypeCTA = ({
   bigLines?: string[];
 }) => {
   const reduce = useReducedMotion();
+  const pathname = usePathname();
+  // Straight to the qualification form, tagged with the page the visitor was on.
+  const target = href ?? `/contact?from=cta${pathname === "/" ? "-home" : pathname.replace(/\//g, "-")}#start`;
 
   return (
     <section aria-label="Start your project" className="relative w-full pt-24 text-center">
@@ -30,7 +34,7 @@ const FadeTypeCTA = ({
         <h2 className="heading">{heading}</h2>
         <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-lg">{sub}</p>
         <Link
-          href={href}
+          href={target}
           className="group mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-foreground px-8 text-base font-medium text-background transition-[background-color,transform] duration-200 ease-out-strong hover:bg-purple active:scale-[0.97]"
         >
           {buttonLabel}

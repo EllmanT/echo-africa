@@ -100,7 +100,7 @@ const ChecklistPage = () => (
           We build it first. You pay only when you love it.
         </p>
         <Link
-          href="/contact"
+          href="/contact?from=launch-checklist#start"
           className="group mt-7 inline-flex h-12 items-center gap-2 rounded-full bg-white px-8 text-base font-medium text-foreground transition-[background-color,color,transform] duration-200 ease-out-strong hover:bg-purple hover:text-white active:scale-[0.97]"
         >
           Start the conversation

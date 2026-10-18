@@ -176,7 +176,7 @@ const ServicesPage = () => {
             Tell us about your business in two minutes. We will point you to the right fix, and we build it first.
           </p>
           <Link
-            href="/contact"
+            href="/contact?from=services#start"
             className="group mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-background px-8 text-base font-medium text-foreground transition-[background-color,color,transform] duration-200 ease-out-strong hover:bg-purple hover:text-white active:scale-[0.97]"
           >
             Start your project
