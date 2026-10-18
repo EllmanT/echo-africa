@@ -40,6 +40,20 @@ export async function POST(request: Request) {
   // Bots: honeypot filled or submitted implausibly fast. Pretend it worked, spend nothing.
   if (req.company || req.elapsedMs < MIN_FILL_TIME_MS) return queued();
 
+  // Resolve what is being reviewed first (pure CPU, free): invalid input never spends a visitor's daily quota.
+  // A site address must be a public one: nothing internal is ever fetched.
+  let target = "";
+  let siteUrl: string | null = null;
+  if (req.mode === "site") {
+    siteUrl = normalizeSiteUrl(req.url ?? "");
+    if (!siteUrl || !isPublicHttpUrl(siteUrl)) {
+      return NextResponse.json({ ok: false, error: "Enter your website address, like yourbusiness.co.zw", issues: { url: ["Enter a valid public website address"] } }, { status: 400 });
+    }
+    target = siteUrl;
+  } else {
+    target = (req.process ?? "").slice(0, 600);
+  }
+
   const ip = clientIp(request.headers);
   // Every AI call costs money, so the limits fail closed: if the counter is unreachable, nobody gets a review.
   const allowed =
@@ -53,19 +67,6 @@ export async function POST(request: Request) {
   const human = await verifyTurnstile(req.turnstileToken, { action: "review", ip, failOpen: false });
   if (!human.ok) {
     return NextResponse.json({ ok: false, error: "We could not confirm you are human. Please reload the page and try again." }, { status: 400 });
-  }
-
-  // Resolve what is being reviewed. A site address must be a public one: nothing internal is ever fetched.
-  let target = "";
-  let siteUrl: string | null = null;
-  if (req.mode === "site") {
-    siteUrl = normalizeSiteUrl(req.url ?? "");
-    if (!siteUrl || !isPublicHttpUrl(siteUrl)) {
-      return NextResponse.json({ ok: false, error: "Enter your website address, like yourbusiness.co.zw", issues: { url: ["Enter a valid public website address"] } }, { status: 400 });
-    }
-    target = siteUrl;
-  } else {
-    target = (req.process ?? "").slice(0, 600);
   }
 
   const [settings, aiOpen] = await Promise.all([getAdminSettings(), reviewEnabled() ? reviewHasBudget() : Promise.resolve(false)]);

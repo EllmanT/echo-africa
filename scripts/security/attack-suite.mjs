@@ -12,6 +12,8 @@ const BASE = (process.env.BASE_URL ?? "").replace(/\/$/, "");
 const URI = process.env.TEST_MONGODB_URI;
 const DBN = process.env.TEST_DB ?? "eka_test";
 const ADMIN_PW = process.env.ADMIN_PW;
+// REAL_IP=1: the target overwrites client-IP headers (Vercel), so IP-spoofing tests are skipped and every request shares one address.
+const REAL_IP = process.env.REAL_IP === "1";
 
 if (!BASE || !URI) throw new Error("Set BASE_URL and TEST_MONGODB_URI");
 if (/(^|\.)eka\.dev/.test(new URL(BASE).host)) throw new Error("Refusing to attack the production domain");
@@ -30,15 +32,14 @@ function check(id, name, ok, evidence = "") {
 }
 
 let ipCounter = 10;
-const nextIp = () => `198.51.100.${++ipCounter}`;
+const nextIp = () => (REAL_IP ? "real" : `198.51.100.${++ipCounter}`);
 async function call(path, { method = "GET", body, headers = {}, cookie, ip = nextIp(), raw } = {}) {
   const res = await fetch(BASE + path, {
     method,
     redirect: "manual",
     headers: {
       ...(body !== undefined || raw !== undefined ? { "Content-Type": "application/json" } : {}),
-      "x-vercel-forwarded-for": ip,
-      "x-forwarded-for": ip, // older builds read this header instead
+      ...(REAL_IP ? {} : { "x-vercel-forwarded-for": ip, "x-forwarded-for": ip }), // older builds read the second
       ...(process.env.VERCEL_BYPASS_TOKEN ? { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS_TOKEN } : {}),
       ...(cookie ? { cookie } : {}),
       ...headers,
@@ -275,15 +276,19 @@ if (ADMIN_PW) {
   for (let i = 0; i < 5; i++) codes.push((await call("/api/review", { method: "POST", ip: ipX, body: rv() })).status);
   check("R5", "One IP gets at most 3 reviews a day, then 429", codes.slice(0, 3).every((c) => c === 200) && codes.slice(3).every((c) => c === 429), codes.join(","));
 
+  if (!REAL_IP) {
   const sameEmail = `same+${Date.now()}@example.com`;
   const ec = [];
   for (let i = 0; i < 4; i++) ec.push((await call("/api/review", { method: "POST", body: rv({ email: sameEmail }) })).status);
   check("R6", "One email address gets at most 2 reviews a day (stops mailbox bombing), then 429", ec.slice(0, 2).every((c) => c === 200) && ec.slice(2).every((c) => c === 429), ec.join(","));
+  }
 
+  if (!REAL_IP) {
   const g = [];
   for (let i = 0; i < 45; i++) g.push((await call("/api/review", { method: "POST", body: rv() })).status);
   const gOk = g.filter((c) => c === 200).length;
   check("R7", "Site-wide daily ceiling (40) stops a distributed flood from spending the AI budget", gOk <= 40 && g.slice(-3).every((c) => c === 429), `200s=${gOk} 429s=${g.filter((c) => c === 429).length}`);
+  }
 
   const doc = await db.collection("leads").findOne({ source: /^free-review/ }, { sort: { createdAt: -1 } });
   check("R8", "A review request becomes a nurture lead with its source recorded", doc?.status === "nurture" && /^free-review/.test(doc?.source ?? "") && !!doc?.email, JSON.stringify({ status: doc?.status, source: doc?.source }));
@@ -299,18 +304,22 @@ if (ADMIN_PW) {
   const limited = codes.filter((c) => c === 429).length;
   check("D1", "Lead endpoint rate-limits one IP (limit 20/hour)", okCount <= 20 && limited >= 5, `200s=${okCount} 429s=${limited}`);
 
+  if (!REAL_IP) {
   const spoofCodes = [];
   for (let i = 0; i < 25; i++) spoofCodes.push((await call("/api/leads", { method: "POST", ip: nextIp(), body: partial({ email: `rot${i}+${Date.now()}@example.com` }) })).status);
   check("D2", "Rotating spoofed IPs still gets through (expected on non-Vercel hosts; Vercel overwrites the header). Informational", true, `200s=${spoofCodes.filter((c) => c === 200).length}`);
+  }
 
   const ipL = "203.0.113.88";
   const loginCodes = [];
   for (let i = 0; i < 12; i++) loginCodes.push((await call("/api/admin/login", { method: "POST", ip: ipL, body: { password: `wrong-${i}` } })).status);
   check("D3", "Admin login locks one IP out after 8 failures", loginCodes.slice(0, 8).every((c) => c === 401) && loginCodes.slice(9).every((c) => c === 429), loginCodes.join(","));
 
+  if (!REAL_IP) {
   const rot = [];
   for (let i = 0; i < 50; i++) rot.push((await call("/api/admin/login", { method: "POST", ip: nextIp(), body: { password: `wrong-rot-${i}` } })).status);
   check("D4", "Brute force across rotating IPs is stopped by the global login ceiling (40 / 15 min)", rot.slice(-5).every((c) => c === 429) && rot.filter((c) => c === 401).length <= 40, `401s=${rot.filter((c) => c === 401).length} 429s=${rot.filter((c) => c === 429).length}`);
+  }
 
   const events = [];
   for (let i = 0; i < 5; i++) events.push((await call("/api/events", { method: "POST", raw: "x".repeat(5000) })).status);
