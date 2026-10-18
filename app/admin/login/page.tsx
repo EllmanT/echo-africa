@@ -13,7 +13,8 @@ const LoginPage = () => {
 
   useEffect(() => {
     const n = new URLSearchParams(window.location.search).get("next");
-    if (n) setNext(n);
+    // Admin paths only: "//evil.example" and absolute URLs would be an open redirect after login.
+    if (n && /^\/admin(\/[A-Za-z0-9._~\/-]*)?$/.test(n)) setNext(n);
   }, []);
 
   const onSubmit = async (e: React.FormEvent) => {

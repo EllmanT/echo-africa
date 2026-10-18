@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { listAdminPosts, upsertAdminPost } from "@/lib/admin/posts";
+import { findDisallowedMdxTags } from "@/lib/security/mdx";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,10 @@ export async function POST(request: Request) {
   const parsed = createSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "Check the required fields" }, { status: 400 });
+  }
+  const badTags = parsed.data.content ? findDisallowedMdxTags(parsed.data.content) : [];
+  if (badTags.length) {
+    return NextResponse.json({ ok: false, error: `These tags are not allowed in articles: ${badTags.join(", ")}` }, { status: 400 });
   }
   await upsertAdminPost(parsed.data.slug, { ...parsed.data, source: "manual" });
   revalidatePath("/playbook");

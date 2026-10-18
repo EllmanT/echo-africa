@@ -1,5 +1,6 @@
 import { SCENE_NAMES } from "@/components/playbook/scenes";
 import { ALLOWED_MDX_TAGS } from "@/components/playbook/mdx-tags";
+import { fetchPublicText } from "@/lib/security/safeUrl";
 import { countWords } from "./readingTime";
 import type { DraftArticle } from "./write";
 
@@ -48,13 +49,10 @@ async function claimLooksSupported(claim: { text: string; sourceUrl: string }): 
   if (!numbers?.length) return true; // Nothing numeric to verify.
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
-    const res = await fetch(claim.sourceUrl, { signal: controller.signal, headers: { "user-agent": "Mozilla/5.0 (compatible; EkaPlaybookBot/1.0)" } });
-    clearTimeout(timeout);
-    if (!res.ok) return true; // Can't verify, don't punish the article for a flaky fetch.
-    const html = await res.text();
-    const text = html.replace(/<[^>]+>/g, " ");
+    // Public http(s) only, redirects re-checked: a cited "source" must never make the server call an internal address.
+    const res = await fetchPublicText(claim.sourceUrl, { headers: { "user-agent": "Mozilla/5.0 (compatible; EkaPlaybookBot/1.0)" } });
+    if (!res || !res.ok) return true; // Can't verify (blocked, down or flaky), don't punish the article for it.
+    const text = res.text.replace(/<[^>]+>/g, " ");
     return numbers.some((n) => text.includes(n));
   } catch {
     return true; // Network hiccup: treat as unverifiable, not as failed.

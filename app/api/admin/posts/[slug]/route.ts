@@ -1,3 +1,4 @@
+import { findDisallowedMdxTags } from "@/lib/security/mdx";
 import { requireAdmin } from "@/lib/security/adminGuard";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
@@ -33,6 +34,10 @@ export async function PATCH(request: Request, { params: paramsPromise }: { param
   if (denied) return denied;
   const parsed = patchSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ ok: false, error: "Invalid update" }, { status: 400 });
+  const badTags = parsed.data.content ? findDisallowedMdxTags(parsed.data.content) : [];
+  if (badTags.length) {
+    return NextResponse.json({ ok: false, error: `These tags are not allowed in articles: ${badTags.join(", ")}` }, { status: 400 });
+  }
   await upsertAdminPost(params.slug, parsed.data);
   revalidatePath("/playbook");
   revalidatePath(`/playbook/${params.slug}`);

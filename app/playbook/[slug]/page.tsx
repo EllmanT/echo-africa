@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import { neutralizeDisallowedMdx } from "@/lib/security/mdx";
 import { FaArrowLeft, FaArrowRight, FaRegClock } from "react-icons/fa6";
 import type { Metadata } from "next";
 
@@ -95,7 +96,7 @@ const PlaybookPostPage = async ({ params: paramsPromise }: { params: Promise<{ s
         </div>
 
         <div id="article-body" className="mt-12">
-          <MDXRemote source={post.content} components={playbookMdxComponents} />
+          <MDXRemote source={neutralizeDisallowedMdx(post.content)} components={playbookMdxComponents} />
         </div>
 
         <Reveal className="mt-16">

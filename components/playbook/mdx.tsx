@@ -2,6 +2,7 @@ import type { AnchorHTMLAttributes, HTMLAttributes, ImgHTMLAttributes } from "re
 import { FaLightbulb } from "react-icons/fa6";
 
 import Reveal from "@/components/Reveal";
+import { isSafeHref } from "@/lib/security/mdx";
 import Illustration from "./Illustration";
 
 /** A boxed aside for the short version, a warning or a key idea. Used as <Callout title="...">. */
@@ -62,9 +63,17 @@ export const playbookMdxComponents = {
       />
     </Reveal>
   ),
-  a: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <a className="text-purple underline decoration-purple/30 underline-offset-4 hover:decoration-purple" {...props} />
-  ),
+  a: ({ href, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) =>
+    isSafeHref(href) ? (
+      <a
+        href={href}
+        rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
+        className="text-purple underline decoration-purple/30 underline-offset-4 hover:decoration-purple"
+        {...props}
+      />
+    ) : (
+      <span {...props} />
+    ),
   strong: (props: HTMLAttributes<HTMLElement>) => <strong className="font-semibold text-foreground" {...props} />,
   hr: () => <hr className="my-12 border-black/[0.08]" />,
   img: ({ alt, src, ...props }: ImgHTMLAttributes<HTMLImageElement>) => (
