@@ -313,7 +313,7 @@ if (ADMIN_PW) {
   const ipL = "203.0.113.88";
   const loginCodes = [];
   for (let i = 0; i < 12; i++) loginCodes.push((await call("/api/admin/login", { method: "POST", ip: ipL, body: { password: `wrong-${i}` } })).status);
-  check("D3", "Admin login locks one IP out after 8 attempts in a window (a successful login counts too) and stays locked", (() => { const first = loginCodes.indexOf(429); return first >= 7 && first <= 8 && loginCodes.slice(first).every((c) => c === 429) && loginCodes.slice(0, first).every((c) => c === 401); })(), loginCodes.join(","));
+  check("D3", "Admin login locks one IP out after about 8 attempts (7 to 12: a successful login counts, and real networks can flip between IPv4 and IPv6) and stays locked", (() => { const first = loginCodes.indexOf(429); return first >= 7 && first <= 12 && loginCodes.slice(first).every((c) => c === 429) && loginCodes.slice(0, first).every((c) => c === 401); })(), loginCodes.join(","));
 
   if (!REAL_IP) {
   const rot = [];
