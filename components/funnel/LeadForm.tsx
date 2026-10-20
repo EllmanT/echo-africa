@@ -123,9 +123,13 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
 
   // Deep links like /contact?service=logo pre-select that service (the Services page uses these).
   useEffect(() => {
-    const wanted = new URLSearchParams(window.location.search).get("service");
-    if (wanted && wanted !== "not-sure" && (SERVICES as readonly string[]).includes(wanted)) {
-      form.setValue("services", [wanted as Service]);
+    // One service ("logo") or several ("website,ai-automation", from the homepage picker). Unknown values are ignored.
+    const wanted = (new URLSearchParams(window.location.search).get("service") ?? "")
+      .split(",")
+      .filter((v, i, all) => v !== "not-sure" && (SERVICES as readonly string[]).includes(v) && all.indexOf(v) === i)
+      .slice(0, SERVICES.length) as Service[];
+    if (wanted.length) {
+      form.setValue("services", wanted);
       // Question 1 is already answered, so start on question 2 (Back still lets them change it).
       setStep((s) => (s === 0 ? 1 : s));
     }

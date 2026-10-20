@@ -276,3 +276,59 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .strike-draw { animation: none; stroke-dashoffset: 0; }
 }
+
+/* ---- Service picker scenes (components/picker/Scenes.tsx) --------------------
+   Each tile is a small looping story. It only plays while the tile is on screen
+   (data-play), and rests on its finished frame otherwise and for reduced motion.
+   Transform and opacity only. */
+.pk-scene svg *,
+.pk-scene .pk-morph,
+.pk-scene .pk-mark,
+.pk-scene .pk-swatch {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pk-scene[data-play="true"] .pk-bar { transform-origin: left center; animation: pk-bar 5.2s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-pulse { animation: pk-pulse 2.4s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-notif { animation: pk-notif 5.2s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-tick { animation: pk-tick 5.6s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-flow { animation: pk-flow 1.4s linear infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-breathe { animation: pk-breathe 3s ease-in-out infinite; }
+.pk-scene[data-play="true"] .pk-dot { animation: pk-dot 1.1s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-float { animation: pk-float 3.6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-morph { animation: pk-morph 7s ease-in-out infinite; }
+.pk-scene[data-play="true"] .pk-mark { transform-origin: bottom center; animation: pk-mark 5s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-swatch { animation: pk-swatch 5s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-rise { transform-origin: bottom center; animation: pk-rise 5s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-fill { transform-origin: left center; animation: pk-fillx 5s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+.pk-scene[data-play="true"] .pk-knob { animation: pk-knob 5s cubic-bezier(0.23, 1, 0.32, 1) infinite; }
+.pk-scene[data-play="true"] .pk-pop { animation: pk-pop 6s cubic-bezier(0.23, 1, 0.32, 1) infinite; animation-delay: var(--d, 0s); }
+
+@keyframes pk-bar { 0% { transform: scaleX(0.04); opacity: 0.4; } 14%, 86% { transform: none; opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes pk-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes pk-notif { 0%, 18% { opacity: 0; transform: translateY(10px) scale(0.96); } 28%, 80% { opacity: 1; transform: none; } 92%, 100% { opacity: 0; transform: translateY(-6px); } }
+@keyframes pk-tick { 0%, 6% { opacity: 0; transform: scale(0.4); } 14%, 84% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: scale(0.9); } }
+@keyframes pk-flow { to { stroke-dashoffset: -16; } }
+@keyframes pk-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+@keyframes pk-dot { 0%, 100% { transform: translateY(0); opacity: 0.55; } 40% { transform: translateY(-4px); opacity: 1; } }
+@keyframes pk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes pk-morph {
+  0%, 100% { border-radius: 50%; transform: rotate(0deg); }
+  25% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(40deg); }
+  50% { border-radius: 24%; transform: rotate(90deg); }
+  75% { border-radius: 70% 30% 30% 70% / 60% 40% 60% 40%; transform: rotate(140deg); }
+}
+@keyframes pk-mark { 0%, 4% { transform: scaleY(0.1); opacity: 0; } 18%, 88% { transform: none; opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes pk-swatch { 0%, 4% { transform: scale(0); } 18%, 100% { transform: none; } }
+@keyframes pk-rise { 0%, 4% { transform: scaleY(0.05); } 20%, 100% { transform: none; } }
+@keyframes pk-fillx { 0%, 4% { transform: scaleX(0.05); } 24%, 100% { transform: none; } }
+@keyframes pk-knob { 0%, 20% { transform: translateX(-12px); } 32%, 100% { transform: translateX(12px); } }
+@keyframes pk-pop { 0%, 3% { opacity: 0; transform: translateY(10px) scale(0.97); } 12%, 90% { opacity: 1; transform: none; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pk-scene * { animation: none !important; }
+}
+
+/* The picker's dock is a translucent material; it goes opaque for visitors who ask for less transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .pk-dock { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
