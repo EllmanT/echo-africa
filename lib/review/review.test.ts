@@ -66,6 +66,10 @@ describe("sanitizeReview", () => {
   it("accepts a complete review", () => {
     expect(sanitizeReview(good).wins).toHaveLength(3);
   });
+  it("keeps a valid lever and falls back to leads for anything else", () => {
+    const r = sanitizeReview({ ...good, wins: [{ ...good.wins[0], lever: "savings" }, { ...good.wins[1], lever: "bogus" }, good.wins[2]] });
+    expect(r.wins.map((w) => w.lever)).toEqual(["savings", "leads", "leads"]);
+  });
   it("rejects incomplete or malformed output", () => {
     expect(() => sanitizeReview({ ...good, wins: good.wins.slice(0, 2) })).toThrow();
     expect(() => sanitizeReview(null)).toThrow();

@@ -13,7 +13,9 @@ import { siteConfig } from "@/lib/seo/site";
 import { cn } from "@/lib/utils";
 
 type Mode = "site" | "process";
-type Win = { title: string; body: string };
+type Win = { title: string; body: string; lever?: "leads" | "value" | "savings" };
+
+const LEVER_LABEL = { leads: "MORE CUSTOMERS", value: "WORTH MORE PER CUSTOMER", savings: "MONEY SAVED" } as const;
 type Review = { headline: string; opener: string; wins: Win[]; nextStep: string };
 type Phase = "form" | "working" | "done" | "queued";
 type Fields = Partial<Record<"name" | "email" | "url" | "process", string>>;
@@ -331,7 +333,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                   transition={{ duration: 0.28, delay: reduce ? 0 : 0.12 + i * 0.07, ease: EASE }}
                   className="rounded-2xl bg-white p-5 md:p-6"
                 >
-                  <p className="text-xs font-extrabold tracking-[0.12em] text-purple">WIN {i + 1}</p>
+                  <p className="text-xs font-extrabold tracking-[0.12em] text-purple">{LEVER_LABEL[w.lever ?? "leads"]}</p>
                   <p className="mt-1.5 font-display text-xl font-bold leading-snug tracking-tight">{w.title}</p>
                   <p className="mt-2 text-base leading-relaxed text-muted-foreground">{w.body}</p>
                 </motion.li>

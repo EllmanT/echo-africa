@@ -1,5 +1,5 @@
 import { siteConfig } from "@/lib/seo/site";
-import type { Review } from "@/lib/review/generate";
+import { LEVER_LABEL, type Review } from "@/lib/review/generate";
 import { button, escapeHtml, firstName, headline, hl, layout, para, signoff, whatsappLink } from "./templates";
 import type { Mail } from "./send";
 
@@ -16,7 +16,7 @@ export function reviewEmail(opts: { name: string; email: string; mode: "site" | 
   const wins = review.wins
     .map(
       (w, i) =>
-        `<p style="margin:0 0 6px;font-size:13px;letter-spacing:0.08em;font-weight:800;color:#7C3AED;">WIN ${i + 1}</p>` +
+        `<p style="margin:0 0 6px;font-size:13px;letter-spacing:0.08em;font-weight:800;color:#7C3AED;">${LEVER_LABEL[w.lever] ?? `FIX ${i + 1}`}</p>` +
         `<h2 style="margin:0 0 8px;font-size:21px;line-height:1.25;font-weight:800;color:#111111;">${escapeHtml(w.title)}</h2>` +
         para(escapeHtml(w.body), 28)
     )
@@ -41,7 +41,7 @@ export function reviewEmail(opts: { name: string; email: string; mode: "site" | 
     ``,
     review.opener,
     ``,
-    ...review.wins.flatMap((w, i) => [`WIN ${i + 1}: ${w.title}`, w.body, ``]),
+    ...review.wins.flatMap((w, i) => [`${LEVER_LABEL[w.lever] ?? `FIX ${i + 1}`}: ${w.title}`, w.body, ``]),
     review.nextStep,
     ``,
     `Start your project: ${cta}`,
