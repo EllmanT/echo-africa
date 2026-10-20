@@ -9,6 +9,7 @@ import { EchoBar, EchoDots } from "@/components/funnel/EchoProgress";
 import TurnstileWidget, { TURNSTILE_SITE_KEY } from "@/components/security/TurnstileWidget";
 import { Input, Textarea } from "@/components/ui/input";
 import { track } from "@/lib/analytics/track";
+import type { ExtractedDocument } from "@/lib/review/extractDocument";
 import { siteConfig } from "@/lib/seo/site";
 import { cn } from "@/lib/utils";
 
@@ -86,6 +87,11 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
   const [humanReset, setHumanReset] = useState(0);
   const startedAt = useRef<number | null>(null);
   const startedTracked = useRef(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [doc, setDoc] = useState<ExtractedDocument | null>(null);
+  const pickedFile = useRef<File | null>(null);
+  const [docBusy, setDocBusy] = useState(false);
+  const [docError, setDocError] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const sentService = useRef<string>("website");
 
@@ -110,6 +116,36 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
     if (phase === "done" || phase === "queued") headingRef.current?.focus();
   }, [phase]);
 
+  // The reader (PDF and Word libraries) loads only now, when someone actually picks a file.
+  const onFile = async (file: File | undefined) => {
+    if (!file) return;
+    setDocError(null);
+    setDocBusy(true);
+    try {
+      const { extractDocument } = await import("@/lib/review/extractDocument");
+      setDoc(await extractDocument(file));
+      pickedFile.current = file;
+      track("review_file");
+    } catch (err) {
+      setDoc(null);
+      setDocError(err instanceof Error && err.message ? err.message : "We could not read that file. Paste the key steps instead.");
+    } finally {
+      setDocBusy(false);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  };
+
+  // Sends the original file to be kept with the lead. Quiet by design: the review never depends on it.
+  const keepFile = (leadRef: unknown) => {
+    const file = pickedFile.current;
+    pickedFile.current = null;
+    if (!file || mode !== "process" || typeof leadRef !== "string") return;
+    const body = new FormData();
+    body.append("leadRef", leadRef);
+    body.append("file", file);
+    fetch("/api/review/file", { method: "POST", body, keepalive: false }).catch(() => undefined);
+  };
+
   const begin = () => {
     if (!startedTracked.current) {
       startedTracked.current = true;
@@ -128,6 +164,8 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
       email: String(data.get("email") ?? ""),
       url: mode === "site" ? String(data.get("url") ?? "") : "",
       process: mode === "process" ? String(data.get("process") ?? "") : "",
+      documentText: mode === "process" && doc ? doc.text : "",
+      documentName: mode === "process" && doc ? doc.name : "",
       source: from,
       elapsedMs: startedAt.current ? Date.now() - startedAt.current : 0,
       company: String(data.get("hp_ref") ?? ""),
@@ -160,10 +198,12 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
         else if (e.t === "queued") {
           finished = true;
           track("review_done");
+          keepFile(e.leadRef);
           setPhase("queued");
         } else if (e.t === "done") {
           finished = true;
           track("review_done");
+          keepFile(e.leadRef);
           setEmailed(Boolean(e.emailed));
           setReview(e.review as Review);
           goStage("done");
@@ -249,14 +289,60 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                     id="fr-process"
                     name="process"
                     rows={4}
-                    required
-                    minLength={20}
+                    required={!doc}
+                    minLength={doc ? 0 : 20}
                     maxLength={600}
                     placeholder="Example: We copy orders from WhatsApp into a spreadsheet, then type them again into our invoicing system."
                     className={field}
                     aria-invalid={Boolean(fieldErrors.process)}
                   />
                   {fieldErrors.process && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.process}</p>}
+
+                  {/* Already written the process down? Read it here, in the browser: nothing is uploaded or stored. */}
+                  <input
+                    ref={fileInput}
+                    id="fr-file"
+                    type="file"
+                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="sr-only"
+                    onChange={(e) => onFile(e.target.files?.[0])}
+                    tabIndex={-1}
+                  />
+                  {doc ? (
+                    <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm">
+                      <span className="min-w-0">
+                        <span className="block truncate font-semibold">{doc.name}</span>
+                        <span className="block text-muted-foreground">
+                          {doc.words.toLocaleString()} words read{doc.truncated ? ", we use the first part" : ""}.
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDoc(null);
+                          pickedFile.current = null;
+                        }}
+                        className="shrink-0 rounded-lg px-2 py-1 font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple/20"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInput.current?.click()}
+                      disabled={docBusy}
+                      className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold transition-[transform,color] duration-150 ease-out-strong hover:text-purple active:scale-[0.97] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple/20"
+                    >
+                      {docBusy ? "Reading your file..." : "Or upload a PDF or Word file"}
+                    </button>
+                  )}
+                  {!doc && !docBusy && <p className="mt-1.5 text-xs text-muted-foreground">PDF or Word, up to 4MB. We keep it private to help you, and never share it or your name without asking you first.</p>}
+                  {docError && (
+                    <p role="alert" className="mt-1.5 text-sm text-red-600">
+                      {docError}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

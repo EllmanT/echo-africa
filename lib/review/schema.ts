@@ -8,6 +8,9 @@ export const reviewRequestSchema = z
     email: z.string().trim().toLowerCase().email("Enter a valid email address").max(120),
     url: z.string().trim().max(200).optional().or(z.literal("")),
     process: z.string().trim().max(600).optional().or(z.literal("")),
+    /** Text the browser read out of an uploaded PDF or Word file. The file itself never reaches the server. */
+    documentText: z.string().max(8200).optional().or(z.literal("")),
+    documentName: z.string().trim().max(120).optional().or(z.literal("")),
     source: z.string().max(60).optional(),
     /** Milliseconds between the form appearing and submit; used against bots. */
     elapsedMs: z.number().int().nonnegative(),
@@ -17,7 +20,9 @@ export const reviewRequestSchema = z
   })
   .superRefine((v, ctx) => {
     if (v.mode === "site" && !v.url) ctx.addIssue({ code: "custom", path: ["url"], message: "Enter your website address" });
-    if (v.mode === "process" && (v.process ?? "").length < 20) ctx.addIssue({ code: "custom", path: ["process"], message: "Tell us a bit more (at least a sentence)" });
+    if (v.mode === "process" && (v.process ?? "").length < 20 && (v.documentText ?? "").trim().length < 40) {
+      ctx.addIssue({ code: "custom", path: ["process"], message: "Tell us a bit more (at least a sentence), or upload a file" });
+    }
   });
 
 export type ReviewRequest = z.infer<typeof reviewRequestSchema>;

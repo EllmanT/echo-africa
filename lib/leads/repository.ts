@@ -20,6 +20,9 @@ export type LeadDoc = Partial<LeadInput> & {
   notes?: string;
   internalNotes?: string;
   tags?: string[];
+  /** A document the lead shared with their free review. The file itself lives in the leadFiles collection. */
+  fileName?: string;
+  fileSize?: number;
   emailsSent?: { type: string; at: Date; ok: boolean }[];
   /** True once the lead has clicked an unsubscribe link. Nurture emails stop; the two transactional emails on submit already happened by then. */
   unsubscribed?: boolean;

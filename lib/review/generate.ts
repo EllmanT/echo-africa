@@ -12,7 +12,7 @@ export type Review = { headline: string; opener: string; wins: Win[]; nextStep: 
 
 export type ReviewInput =
   | { mode: "site"; facts: SiteFacts }
-  | { mode: "process"; description: string };
+  | { mode: "process"; description: string; document?: string };
 
 /** Hard limits that keep one review cheap: roughly 2 to 3k tokens in, under 700 out (about half a US cent on Haiku). */
 export const REVIEW_MAX_OUTPUT_TOKENS = 800;
@@ -107,8 +107,10 @@ export function buildReviewPrompt(input: ReviewInput): string {
   if (input.mode === "site") {
     return `Write the free review for this business website.\n\n${siteFactsToPrompt(input.facts)}`;
   }
-  const safe = input.description.replace(/<\/?\s*process_data/gi, "<\\process_data");
-  return `Write the free review for this manual process the owner wants to automate. Give 3 automation wins: what AI or software could take over, and what it saves.\n\n<process_data>\n${safe}\n</process_data>`;
+  const safe = (s: string) => s.replace(/<\/?\s*process_data/gi, "<\\process_data");
+  const note = input.description.trim() ? `Owner's note:\n${safe(input.description)}\n\n` : "";
+  const doc = input.document?.trim() ? `Text from a document the owner shared (may be partial):\n${safe(input.document.trim().slice(0, 8000))}\n` : "";
+  return `Write the free review for this manual process the owner wants to automate. Give 3 automation wins: what AI or software could take over, and what it saves.\n\n<process_data>\n${note}${doc}</process_data>`;
 }
 
 /** Nothing a visitor sends may make one review expensive: the prompt has a hard size ceiling (about 3k tokens). */

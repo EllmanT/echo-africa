@@ -27,7 +27,8 @@ const REVIEW_MAILS_PER_DAY = 80;
 const queued = (extra: Record<string, unknown> = {}) => NextResponse.json({ ok: true, queued: true, ...extra });
 
 export async function POST(request: Request) {
-  const body = await readJsonLimited(request, 4096);
+  // Room for the text of an uploaded document (the schema caps each field); the file itself is read in the browser.
+  const body = await readJsonLimited(request, 24_000);
   if (body === null) return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
 
   const parsed = reviewRequestSchema.safeParse(body);
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     }
     target = siteUrl;
   } else {
-    target = (req.process ?? "").slice(0, 600);
+    target = (req.process ?? "").slice(0, 600) || `Uploaded document: ${req.documentName || "file"}`;
   }
 
   const ip = clientIp(request.headers);
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
         } else {
           send({ t: "stage", stage: "read" });
           send({ t: "stage", stage: "think" });
-          result = await generateReview({ mode: "process", description: req.process ?? "" });
+          result = await generateReview({ mode: "process", description: req.process ?? "", document: req.documentText ?? "" });
         }
         review = result.review;
         await recordReviewUsage(result.costUsd, true);
