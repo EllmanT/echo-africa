@@ -50,7 +50,7 @@ const STEPS = [
   },
   {
     title: "Where can we reach you?",
-    hint: "We reply on WhatsApp and by email.",
+    hint: "We reply on WhatsApp and by email. You will also get our short daily tips. Unsubscribe anytime.",
     fields: ["name", "email", "whatsapp"] as const,
   },
   {

@@ -110,6 +110,45 @@ const SettingsForm = ({ initial, spentUsd = 0, reviewSpentUsd = 0 }: { initial: 
         />
       </Field>
 
+      <h2 className="pt-4 font-display text-lg font-bold tracking-tight">Daily Playbook email</h2>
+
+      <Field label="Daily email on" hint="Every lead is subscribed when they share their details, and each email has an unsubscribe link. Off pauses the sending for everyone.">
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={values.digestEnabled}
+            onChange={(e) => setValues({ ...values, digestEnabled: e.target.checked })}
+            className="h-5 w-5 accent-purple"
+          />
+          Send the short email for each new article
+        </label>
+      </Field>
+
+      <Field label="Send from (Harare time)" hint="Today's email goes out from this hour, once today's article is live. The article itself is written at 08:00.">
+        <select
+          value={values.digestHour}
+          onChange={(e) => setValues({ ...values, digestHour: Number(e.target.value) })}
+          className={inputClass}
+        >
+          {Array.from({ length: 20 }, (_, h) => (
+            <option key={h} value={h}>
+              {String(h).padStart(2, "0")}:00
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Emails per day, at most" hint="Gmail limits how much one account can send. Keep this under 400 so your lead alerts are never blocked.">
+        <input
+          type="number"
+          min={0}
+          max={1000}
+          value={values.digestDailyCap}
+          onChange={(e) => setValues({ ...values, digestDailyCap: Number(e.target.value) })}
+          className={inputClass}
+        />
+      </Field>
+
       <div className="flex items-center gap-3 pt-2">
         <button
           type="submit"

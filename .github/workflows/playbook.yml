@@ -1,11 +1,14 @@
 name: Playbook article engine
 
-# One article a day at 07:00 Harare time (Harare is UTC+2 all year, so 05:00 UTC).
+# One article a day at 08:00 Harare time (Harare is UTC+2 all year, so 06:00 UTC), two hours before the daily email.
+# A second call at 10:00 Harare is a safety net: it does nothing when the article is already live (the daily cap
+# makes it a green skip), and retries once when the first run failed.
 # Cost is capped separately: the site refuses to write more once this month's real
 # spend reaches the monthly budget set in /admin/settings (default $1).
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "0 6 * * *"
+    - cron: "0 8 * * *"
   workflow_dispatch: {}
 
 jobs:

@@ -26,6 +26,9 @@ export async function listJobRuns(limit = 30): Promise<JobRun[]> {
 
 /** The job-run slot used by the hourly nurture sweep. It shares the jobRuns collection but is not an article. */
 export const NURTURE_SLOT = "nurture";
+/** The job-run slot used by the daily Playbook email send. */
+export const DIGEST_SLOT = "digest";
+const NON_ARTICLE_SLOTS = [NURTURE_SLOT, DIGEST_SLOT];
 
 /** Start of "today" in Africa/Harare (fixed UTC+2, no DST), as a UTC instant. */
 export function startOfHarareDayUtc(now = new Date()): Date {
@@ -39,7 +42,7 @@ export function startOfHarareDayUtc(now = new Date()): Date {
  * as "published" too, so counting them made the daily cap look reached all day and silently blocked every article.
  */
 export function publishedArticleFilter(since: Date) {
-  return { status: "published", slot: { $ne: NURTURE_SLOT }, startedAt: { $gte: since } };
+  return { status: "published", slot: { $nin: NON_ARTICLE_SLOTS }, startedAt: { $gte: since } };
 }
 
 /** How many articles were actually published today (Africa/Harare). */
@@ -53,6 +56,6 @@ export async function countPublishedToday(now = new Date()): Promise<number> {
 export async function lastArticleRun(): Promise<JobRun | null> {
   const db = await getDb();
   if (!db) return null;
-  const doc = await db.collection("jobRuns").find({ slot: { $ne: NURTURE_SLOT } }).sort({ startedAt: -1 }).limit(1).next();
+  const doc = await db.collection("jobRuns").find({ slot: { $nin: NON_ARTICLE_SLOTS } }).sort({ startedAt: -1 }).limit(1).next();
   return doc ? { ...(doc as unknown as JobRun), _id: doc._id.toString() } : null;
 }

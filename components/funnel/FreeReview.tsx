@@ -386,6 +386,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
               <FaArrowRight size={13} className="transition-transform duration-200 ease-out-strong group-hover:translate-x-1" />
             </button>
             <p className="mt-4 text-center text-sm text-muted-foreground">Takes about 20 seconds. No call, no card.</p>
+            <p className="mt-2 text-center text-xs text-muted-foreground">You will also get Tapiwa&apos;s short daily tips by email. Unsubscribe anytime.</p>
           </motion.form>
         )}
 

@@ -14,6 +14,9 @@ const schema = z.object({
   reviewEnabled: z.boolean(),
   reviewDailyCap: z.number().int().min(0).max(500),
   reviewMonthlyBudgetUsd: z.number().min(0).max(100),
+  digestEnabled: z.boolean(),
+  digestHour: z.number().int().min(0).max(23),
+  digestDailyCap: z.number().int().min(0).max(1000),
 });
 
 export async function PUT(request: Request) {

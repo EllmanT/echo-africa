@@ -14,10 +14,10 @@ const UnsubscribePage = async ({ searchParams }: Props) => {
   const valid = Boolean(leadId && token && ObjectId.isValid(leadId) && verifyUnsubscribeToken(leadId, token));
   const state = done === "1" ? "done" : valid ? "confirm" : "invalid";
 
-  const heading = { done: "You're unsubscribed", confirm: "Unsubscribe from follow-up emails?", invalid: "That link didn't work" }[state];
+  const heading = { done: "You're unsubscribed", confirm: "Unsubscribe from our emails?", invalid: "That link didn't work" }[state];
   const body = {
-    done: "You won't get any more follow-up emails from us. If you change your mind, just reach out.",
-    confirm: "Press the button and we'll stop the follow-up emails straight away.",
+    done: "You won't get any more emails from us, including the daily tips. If you change your mind, just reach out.",
+    confirm: "Press the button and we'll stop the daily tips and follow-up emails straight away.",
     invalid: "This unsubscribe link looks broken or expired. Message us and we'll take care of it directly.",
   }[state];
 

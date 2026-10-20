@@ -4,6 +4,7 @@ import { getDashboardStats } from "@/lib/admin/dashboard";
 import { lastArticleRun } from "@/lib/admin/jobRuns";
 import { getAdminSettings } from "@/lib/admin/settings";
 import { reviewUsage } from "@/lib/review/budget";
+import { digestStats } from "@/lib/digest/stats";
 import StatCard from "@/components/admin/StatCard";
 import { StatusBadge, TierBadge } from "@/components/admin/Badge";
 
@@ -22,7 +23,7 @@ const formatDate = (d: Date) =>
   new Date(d).toLocaleDateString("en-ZW", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 const DashboardPage = async () => {
-  const [stats, lastRun, review, settings] = await Promise.all([getDashboardStats(), lastArticleRun(), reviewUsage(), getAdminSettings()]);
+  const [stats, lastRun, review, settings, digest] = await Promise.all([getDashboardStats(), lastArticleRun(), reviewUsage(), getAdminSettings(), digestStats()]);
 
   if (!stats) {
     return (
@@ -54,6 +55,14 @@ const DashboardPage = async () => {
         <StatCard label="New this week" value={stats.leadsThisWeek} />
         <StatCard label="Priority" value={stats.tierCounts.priority ?? 0} />
         <StatCard label="Qualified" value={stats.tierCounts.qualified ?? 0} />
+      </div>
+
+      <h2 className="mt-10 font-display text-lg font-bold tracking-tight">Daily Playbook email</h2>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Subscribers" value={digest.subscribers} hint="One per email address" />
+        <StatCard label="Sent for today's article" value={digest.sentToday} hint={settings.digestEnabled ? `From ${String(settings.digestHour).padStart(2, "0")}:00 Harare` : "Switched off"} />
+        <StatCard label="Unsubscribed" value={digest.unsubscribed} />
+        <StatCard label="Today's subject" value={digest.lastSubject ? "Written" : "Not yet"} hint={digest.lastSubject ?? "Appears once today's article is live"} />
       </div>
 
       <h2 className="mt-10 font-display text-lg font-bold tracking-tight">Instant review</h2>

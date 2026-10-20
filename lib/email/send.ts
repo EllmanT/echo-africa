@@ -24,6 +24,8 @@ export type Mail = {
   html: string;
   text: string;
   replyTo?: string;
+  /** Extra headers, for example List-Unsubscribe so mailbox apps can show their own unsubscribe button. */
+  headers?: Record<string, string>;
 };
 
 /** Sends one email. Never throws: returns whether it was sent. */
@@ -40,6 +42,7 @@ export async function sendMail(mail: Mail): Promise<boolean> {
       subject: mail.subject,
       html: mail.html,
       text: mail.text,
+      ...(mail.headers ? { headers: mail.headers } : {}),
     });
     return true;
   } catch (error) {
