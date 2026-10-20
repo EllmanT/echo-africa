@@ -38,7 +38,8 @@ export async function POST(request: Request) {
     }
 
     // A run that could not write the email is the one thing the owner needs to hear about; a quiet skip is normal.
-    if (result.status === "failed") {
+    // A paused article is already known about: only a fresh failure is worth an email.
+    if (result.status === "failed" && !(result.reason ?? "").includes("Paused")) {
       const { notifyEmail } = await getAdminSettings();
       await sendMail({
         to: notifyEmail,

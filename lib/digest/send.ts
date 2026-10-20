@@ -7,7 +7,9 @@ import { harareDateString, inSendWindow } from "./time";
 import { ensureDigest, type DigestSource } from "./generate";
 
 /** Most emails one run sends. The job runs hourly, so a bigger list simply takes a few runs, inside Gmail's limits. */
-export const PER_RUN_LIMIT = 60;
+export const PER_RUN_LIMIT = 40;
+/** Stop starting new sends after this long, well inside the function's 60 second ceiling, so a run is never killed mid-send. */
+const TIME_BUDGET_MS = 35_000;
 const CONCURRENCY = 3;
 const LEASE_MS = 10 * 60 * 1000;
 /** A bad address is tried twice at most, then left alone. */
@@ -128,8 +130,9 @@ export async function runDigest(now = new Date()): Promise<DigestRunResult> {
   const batch = pending.slice(0, PER_RUN_LIMIT);
   let next = 0;
   let capHit = false;
+  const started = Date.now();
   const worker = async () => {
-    while (next < batch.length && !capHit) {
+    while (next < batch.length && !capHit && Date.now() - started < TIME_BUDGET_MS) {
       const sub = batch[next++];
       // Gmail's own daily limit would also stop the lead alerts, so the digest has its own ceiling.
       if (!(await allowRequest("mail:digest", settings.digestDailyCap, 86400))) {
@@ -143,6 +146,10 @@ export async function runDigest(now = new Date()): Promise<DigestRunResult> {
   };
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
+  // A spent daily ceiling with nothing sent is a quiet skip, not a send worth logging every hour.
+  if (capHit && sent + failed === 0) {
+    return { status: "skipped", reason: "Daily sending ceiling reached, the rest goes tomorrow", slug: article.slug, ...empty, remaining: pending.length, subscribers: total };
+  }
   return {
     status: "sent",
     reason: capHit ? "Daily sending ceiling reached, the rest goes tomorrow's quota" : undefined,

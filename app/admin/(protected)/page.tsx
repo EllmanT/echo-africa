@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { getDashboardStats } from "@/lib/admin/dashboard";
 import { lastArticleRun } from "@/lib/admin/jobRuns";
-import { getAdminSettings } from "@/lib/admin/settings";
+import { getAdminSettings, reviewActive } from "@/lib/admin/settings";
 import { reviewUsage } from "@/lib/review/budget";
 import { digestStats } from "@/lib/digest/stats";
 import StatCard from "@/components/admin/StatCard";
@@ -69,7 +69,7 @@ const DashboardPage = async () => {
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Sent today" value={`${review.sentToday} / ${settings.reviewDailyCap}`} hint="Today's cap for the whole site" />
         <StatCard label="Sent this month" value={review.sentThisMonth} />
-        <StatCard label="Spent this month" value={`$${review.spendUsd.toFixed(2)} / $${settings.reviewMonthlyBudgetUsd.toFixed(2)}`} hint={settings.reviewEnabled ? "Hard ceiling, then a personal reply" : "Switched off"} />
+        <StatCard label="Spent this month" value={`$${review.spendUsd.toFixed(2)} / $${settings.reviewMonthlyBudgetUsd.toFixed(2)}`} hint={reviewActive(settings) ? "Hard ceiling, then a personal reply" : "Switched off"} />
         <StatCard label="Failed this month" value={review.failedThisMonth} hint="Visitors got a personal reply instead" />
       </div>
 

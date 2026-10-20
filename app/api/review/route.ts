@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { getAdminSettings } from "@/lib/admin/settings";
+import { getAdminSettings, reviewActive } from "@/lib/admin/settings";
 import { reviewEmail, reviewOwnerEmail } from "@/lib/email/review-template";
 import { sendMail } from "@/lib/email/send";
 import { upsertLead } from "@/lib/leads/repository";
 import { signLeadRef } from "@/lib/leads/leadRef";
-import { allowRequest, clientIp, readJsonLimited } from "@/lib/rateLimit";
+import { allowRequest, clientIp, readJsonLimited, releaseRequest } from "@/lib/rateLimit";
 import { recordReviewUsage, reviewHasBudget } from "@/lib/review/budget";
 import { generateReview, ReviewGenerationError, type Review } from "@/lib/review/generate";
 import { hostLabel, mailboxKey, normalizeSiteUrl, reviewRequestSchema } from "@/lib/review/schema";
@@ -56,21 +56,28 @@ export async function POST(request: Request) {
 
   const ip = clientIp(request.headers);
   const settings = await getAdminSettings();
+  // Cheapest gate first: one IP cannot hammer the bot check or the counters below.
+  if (!(await allowRequest(`review:ip:${ip}`, PER_IP_PER_DAY, 86400, { failClosed: true }))) {
+    return NextResponse.json({ ok: false, error: "You have used today's free reviews. Start a project instead and we will reply personally." }, { status: 429 });
+  }
+
+  // The bot check comes BEFORE the per-person and site-wide counters. Otherwise a script with no token could spend a
+  // victim's email or phone allowance, or the whole site's daily cap, without ever being a real visitor.
+  const human = await verifyTurnstile(req.turnstileToken, { action: "review", ip, failOpen: false });
+  if (!human.ok) {
+    return NextResponse.json({ ok: false, error: "We could not confirm you are human. Please reload the page and try again." }, { status: 400 });
+  }
+
+  const limitKeys = [`review:ip:${ip}`, `review:to:${mailboxKey(req.email)}`, `review:wa:${req.whatsapp.replace(/\D/g, "")}`, "review:all"];
   // Every AI call costs money, so the limits fail closed: if the counter is unreachable, nobody gets a review.
-  // The mailbox limit uses the normalised address, so +tags and gmail dots cannot multiply it.
+  // The mailbox limit uses the normalised address, so +tags and gmail dots cannot multiply it, and a phone number is
+  // a second identity so new email aliases cannot get around the per-person limit.
   const allowed =
-    (await allowRequest(`review:ip:${ip}`, PER_IP_PER_DAY, 86400, { failClosed: true })) &&
     (await allowRequest(`review:to:${mailboxKey(req.email)}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
-    // A phone number is a second identity: new email aliases cannot get around the per-person limit.
     (await allowRequest(`review:wa:${req.whatsapp.replace(/\D/g, "")}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
     (await allowRequest("review:all", settings.reviewDailyCap, 86400, { failClosed: true }));
   if (!allowed) {
     return NextResponse.json({ ok: false, error: "You have used today's free reviews. Start a project instead and we will reply personally." }, { status: 429 });
-  }
-
-  const human = await verifyTurnstile(req.turnstileToken, { action: "review", ip, failOpen: false });
-  if (!human.ok) {
-    return NextResponse.json({ ok: false, error: "We could not confirm you are human. Please reload the page and try again." }, { status: 400 });
   }
 
   // From here the visitor waits, so the reply is a stream of real progress events (one JSON object per line).
@@ -103,7 +110,7 @@ export async function POST(request: Request) {
 
   async function run(send: (event: Record<string, unknown>) => void) {
     send({ t: "stage", stage: "start" });
-    const aiOpen = settings.reviewEnabled ? await reviewHasBudget(settings.reviewMonthlyBudgetUsd) : false;
+    const aiOpen = reviewActive(settings) ? await reviewHasBudget(settings.reviewMonthlyBudgetUsd) : false;
 
     // Try the AI path. Any failure falls through to the human-reply path below, so a visitor is never left hanging.
     let review: Review | undefined;
@@ -117,6 +124,8 @@ export async function POST(request: Request) {
           const page = await fetchPublicText(siteUrl, { timeoutMs: 8000, maxBytes: 600_000, headers: { "user-agent": "Mozilla/5.0 (compatible; EkaReviewBot/1.0; +https://www.eka.dev)" } });
           // Could not connect at all (typo, no such domain, timeout): say so now instead of queuing work for a human.
           if (!page) {
+            // A typo is not a review: give the visitor's allowance back so one slip does not cost them half their day.
+            await Promise.all(limitKeys.map((k) => releaseRequest(k, 86400)));
             send({ t: "error", error: "We could not open that address. Check the spelling and try again.", issues: { url: ["We could not open this address"] } });
             return;
           }

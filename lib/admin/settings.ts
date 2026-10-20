@@ -5,6 +5,9 @@ import { DEFAULT_REVIEW_DAILY_CAP, reviewMonthlyBudgetUsd } from "@/lib/review/b
 export const DEFAULT_DIGEST_HOUR = 10;
 export const DEFAULT_DIGEST_DAILY_CAP = 300;
 
+/** Whether instant reviews run right now: the admin switch AND the env kill switch (which always wins). */
+export const reviewActive = (s: { reviewEnabled: boolean }): boolean => s.reviewEnabled && process.env.REVIEW_ENABLED !== "false";
+
 export type AdminSettings = {
   notifyEmail: string;
   /** Stops the automated Playbook pipeline after this many published articles in a day. */
@@ -45,8 +48,9 @@ export async function getAdminSettings(): Promise<AdminSettings> {
     dailyGenerationCap: typeof scoreDoc?.dailyGenerationCap === "number" ? scoreDoc.dailyGenerationCap : 1,
     monthlyBudgetUsd:
       typeof scoreDoc?.monthlyBudgetUsd === "number" ? scoreDoc.monthlyBudgetUsd : DEFAULT_MONTHLY_BUDGET_USD,
-    // The env kill switch always wins: REVIEW_ENABLED=false turns the review off whatever the admin says.
-    reviewEnabled: process.env.REVIEW_ENABLED === "false" ? false : reviewDoc?.enabled !== false,
+    // This is the admin's own switch, exactly as saved. The REVIEW_ENABLED=false env kill switch is applied by
+    // reviewActive(), so saving settings while it is set never writes "off" into the database.
+    reviewEnabled: reviewDoc?.enabled !== false,
     reviewDailyCap: typeof reviewDoc?.dailyCap === "number" ? reviewDoc.dailyCap : DEFAULT_REVIEW_DAILY_CAP,
     reviewMonthlyBudgetUsd: typeof reviewDoc?.monthlyBudgetUsd === "number" ? reviewDoc.monthlyBudgetUsd : reviewMonthlyBudgetUsd(),
     digestEnabled: digestDoc?.enabled !== false,

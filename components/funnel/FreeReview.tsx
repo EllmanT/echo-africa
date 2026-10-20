@@ -85,6 +85,8 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
   const [emailed, setEmailed] = useState(false);
   const [humanToken, setHumanToken] = useState<string | null>(null);
   const [humanReset, setHumanReset] = useState(0);
+  // What the visitor typed, so an error (a typo in the address, a limit, a dropped connection) never empties the form.
+  const [saved, setSaved] = useState({ name: "", email: "", whatsapp: "", url: "", process: "" });
   const startedAt = useRef<number | null>(null);
   const startedTracked = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -109,7 +111,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
 
   // The honeypot timer starts when the form appears, not on first focus: autofill and paste can finish a form before any focus event.
   useEffect(() => {
-    if (phase === "form") startedAt.current = Date.now();
+    if (phase === "form" && startedAt.current === null) startedAt.current = Date.now();
   }, [phase]);
 
   useEffect(() => {
@@ -158,6 +160,14 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
     setError(null);
     setFieldErrors({});
     const data = new FormData(e.currentTarget);
+    setSaved({
+      name: String(data.get("name") ?? ""),
+      email: String(data.get("email") ?? ""),
+      whatsapp: String(data.get("whatsapp") ?? ""),
+      url: String(data.get("url") ?? ""),
+      process: String(data.get("process") ?? ""),
+    });
+    setHumanToken(null); // A Turnstile token works once. The form asks for a fresh one if it comes back.
     const payload = {
       mode,
       name: String(data.get("name") ?? ""),
@@ -263,21 +273,21 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                 <label htmlFor="fr-name" className={label}>
                   Your name
                 </label>
-                <Input id="fr-name" name="name" autoComplete="name" required minLength={2} maxLength={80} className={field} aria-invalid={Boolean(fieldErrors.name)} />
+                <Input id="fr-name" name="name" defaultValue={saved.name} autoComplete="name" required minLength={2} maxLength={80} className={field} aria-invalid={Boolean(fieldErrors.name)} />
                 {fieldErrors.name && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.name}</p>}
               </div>
               <div>
                 <label htmlFor="fr-email" className={label}>
                   Your email
                 </label>
-                <Input id="fr-email" name="email" type="email" autoComplete="email" required maxLength={120} className={field} aria-invalid={Boolean(fieldErrors.email)} />
+                <Input id="fr-email" name="email" defaultValue={saved.email} type="email" autoComplete="email" required maxLength={120} className={field} aria-invalid={Boolean(fieldErrors.email)} />
                 {fieldErrors.email && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.email}</p>}
               </div>
               <div>
                 <label htmlFor="fr-whatsapp" className={label}>
                   Your WhatsApp number
                 </label>
-                <Input id="fr-whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="077 123 4567" required maxLength={24} className={field} aria-invalid={Boolean(fieldErrors.whatsapp)} />
+                <Input id="fr-whatsapp" name="whatsapp" defaultValue={saved.whatsapp} type="tel" inputMode="tel" autoComplete="tel" placeholder="077 123 4567" required maxLength={24} className={field} aria-invalid={Boolean(fieldErrors.whatsapp)} />
                 {fieldErrors.whatsapp ? (
                   <p className="mt-1.5 text-sm text-red-600">{fieldErrors.whatsapp}</p>
                 ) : (
@@ -289,7 +299,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                   <label htmlFor="fr-url" className={label}>
                     Your website address
                   </label>
-                  <Input id="fr-url" name="url" inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="yourbusiness.co.zw" required maxLength={200} className={field} aria-invalid={Boolean(fieldErrors.url)} />
+                  <Input id="fr-url" name="url" defaultValue={saved.url} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="yourbusiness.co.zw" required maxLength={200} className={field} aria-invalid={Boolean(fieldErrors.url)} />
                   {fieldErrors.url && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.url}</p>}
                 </div>
               ) : (
@@ -300,6 +310,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                   <Textarea
                     id="fr-process"
                     name="process"
+                    defaultValue={saved.process}
                     rows={4}
                     required={!doc}
                     minLength={doc ? 0 : 20}

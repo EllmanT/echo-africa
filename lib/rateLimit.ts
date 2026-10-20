@@ -37,6 +37,19 @@ export type RateLimitOptions = {
   failClosed?: boolean;
 };
 
+/** Gives one slot back, for a request that failed before any real work was done (for example a mistyped website address). */
+export async function releaseRequest(key: string, windowSeconds: number): Promise<void> {
+  const bucket = memory.get(key);
+  if (bucket && bucket.count > 0) bucket.count -= 1;
+  try {
+    const db = await getDb();
+    const windowStart = Math.floor(Date.now() / (windowSeconds * 1000));
+    await db?.collection("rateLimits").updateOne({ _id: `${key}:${windowStart}` as unknown as never, count: { $gt: 0 } }, { $inc: { count: -1 } });
+  } catch {
+    // Giving a slot back is a courtesy: if it fails, the visitor simply keeps the strict limit.
+  }
+}
+
 /**
  * Two layers: an in-memory counter first (free), then a fixed-window counter in Mongo (TTL index cleans old windows).
  * Returns true when the request is allowed. If the database is unavailable, the in-memory limit still applies;

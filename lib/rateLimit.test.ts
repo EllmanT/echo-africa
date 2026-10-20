@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { allowRequest, clientIp, readJsonLimited } from "./rateLimit";
+import { allowRequest, clientIp, readJsonLimited, releaseRequest } from "./rateLimit";
 
 describe("allowRequest (no database configured)", () => {
   it("blocks after the limit using the in-memory layer", async () => {
@@ -33,5 +33,16 @@ describe("readJsonLimited", () => {
     expect(await readJsonLimited(post('{"a":1}'))).toEqual({ a: 1 });
     expect(await readJsonLimited(post("x".repeat(2000)), 1000)).toBeNull();
     expect(await readJsonLimited(post("not json"))).toBeNull();
+  });
+});
+
+describe("releaseRequest", () => {
+  it("gives a slot back so a failed request does not cost the visitor an attempt", async () => {
+    const key = `release-test:${Math.random()}`;
+    expect(await allowRequest(key, 1, 60, { shared: false })).toBe(true);
+    expect(await allowRequest(key, 1, 60, { shared: false })).toBe(false);
+    await releaseRequest(key, 60);
+    await releaseRequest(key, 60); // never goes below zero
+    expect(await allowRequest(key, 1, 60, { shared: false })).toBe(true);
   });
 });

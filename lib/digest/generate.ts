@@ -138,8 +138,18 @@ Your previous answer was rejected: ${lastError}. Fix exactly that. Keep every fi
       lastError = error instanceof Error ? error.message : String(error);
     }
   }
-  throw new Error(lastError);
+  throw new DigestError(lastError, meter.usd);
 }
+
+/** A failed generation still cost money: carry that cost to whoever logs it. */
+export class DigestError extends Error {
+  constructor(message: string, readonly costUsd: number) {
+    super(message);
+  }
+}
+
+/** At most this many failed writing attempts per article before the job stops trying and waits for a human. */
+const MAX_FAILED_WRITES = 3;
 
 /** The stored digest for an article, written on first use. Cost is logged with the other AI spend. */
 export async function ensureDigest(src: DigestSource): Promise<Digest> {
@@ -148,10 +158,30 @@ export async function ensureDigest(src: DigestSource): Promise<Digest> {
   const existing = await col?.findOne({ _id: src.slug as never });
   if (existing?.digest) return existing.digest as Digest;
 
-  const { digest, costUsd } = await generateDigest(src);
+  if (((existing?.failures as number | undefined) ?? 0) >= MAX_FAILED_WRITES) {
+    throw new Error("Paused: the email for this article failed to write several times, so it is not retried again today");
+  }
+
+  let generated;
   try {
-    await col?.updateOne({ _id: src.slug as never }, { $setOnInsert: { slug: src.slug, digest, costUsd, createdAt: new Date() } }, { upsert: true });
+    generated = await generateDigest(src);
+  } catch (error) {
+    const cost = error instanceof DigestError ? error.costUsd : 0;
+    try {
+      await db?.collection("aiUsage").insertOne({ kind: "digest", costUsd: cost, ok: false, at: new Date() });
+      await col?.updateOne({ _id: src.slug as never }, { $inc: { failures: 1 }, $set: { lastFailedAt: new Date() }, $setOnInsert: { slug: src.slug, createdAt: new Date() } }, { upsert: true });
+    } catch {
+      // Bookkeeping is best effort.
+    }
+    throw error;
+  }
+  const { digest, costUsd } = generated;
+  try {
     await db?.collection("aiUsage").insertOne({ kind: "digest", costUsd, ok: true, at: new Date() });
+    await col?.updateOne({ _id: src.slug as never }, { $setOnInsert: { slug: src.slug, digest, costUsd, createdAt: new Date() } }, { upsert: true });
+    // Two runs can write at once; the first stored digest wins, so every subscriber gets the same email.
+    const stored = await col?.findOne({ _id: src.slug as never });
+    if (stored?.digest) return stored.digest as Digest;
   } catch {
     // Storing is best effort: the email can still go out from the digest in memory.
   }

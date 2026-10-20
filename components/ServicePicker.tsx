@@ -109,9 +109,9 @@ const ServicePicker = () => {
   const [picked, setPicked] = useState<string[]>([]);
 
   const toggle = (key: string) => {
+    if (!picked.includes(key)) track("picker_select");
     setPicked((current) => {
       if (current.includes(key)) return current.filter((k) => k !== key);
-      track("picker_select");
       return key === "not-sure" ? ["not-sure"] : [...current.filter((k) => k !== "not-sure"), key];
     });
   };
