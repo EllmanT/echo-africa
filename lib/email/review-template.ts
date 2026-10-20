@@ -61,6 +61,8 @@ export function reviewOwnerEmail(opts: {
   to: string;
   name: string;
   email: string;
+  /** Normalised international number, used to build a one-tap WhatsApp link for the owner. */
+  whatsapp?: string;
   mode: "site" | "process";
   subject: string;
   target: string;
@@ -75,12 +77,12 @@ export function reviewOwnerEmail(opts: {
     : `<p><strong>No AI review was sent.</strong> Please reply to this person yourself.${opts.failure ? `<br>Reason: ${e(opts.failure.slice(0, 300))}` : ""}</p>`;
   const html = `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111;">
 <h2 style="margin:0 0 12px;">${e(opts.subject)}</h2>
-<p><strong>${e(opts.name)}</strong> &lt;${e(opts.email)}&gt;<br>${opts.mode === "site" ? "Website" : "Process"}: ${e(opts.target)}</p>
+<p><strong>${e(opts.name)}</strong> &lt;${e(opts.email)}&gt;${opts.whatsapp ? `<br>WhatsApp: <a href="https://wa.me/${opts.whatsapp.replace(/\D/g, "")}">${e(opts.whatsapp)}</a>` : ""}<br>${opts.mode === "site" ? "Website" : "Process"}: ${e(opts.target)}</p>
 ${summary}
 ${opts.leadId ? `<p><a href="${siteConfig.url}/admin/leads">Open in admin</a></p>` : ""}</div>`;
   const text = [
     opts.subject,
-    `${opts.name} <${opts.email}>`,
+    `${opts.name} <${opts.email}>${opts.whatsapp ? ` WhatsApp: ${opts.whatsapp}` : ""}`,
     `${opts.mode === "site" ? "Website" : "Process"}: ${opts.target}`,
     opts.review ? `${opts.review.headline}\n${opts.review.wins.map((w) => `- ${w.title}: ${w.body}`).join("\n")}` : `No AI review was sent. Reply to this person yourself.${opts.failure ? ` Reason: ${opts.failure.slice(0, 300)}` : ""}`,
   ].join("\n\n");

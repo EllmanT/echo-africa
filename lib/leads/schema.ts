@@ -1,12 +1,13 @@
 import { z } from "zod";
+import { isPlausibleWhatsapp, normalizeWhatsapp, WHATSAPP_ERROR } from "./phone";
 import { GOALS, ROLES, SERVICES, TIMINGS } from "./types";
 
-/** Digits with an optional leading +, 9 to 15 digits once spaces and dashes are removed. */
-const phone = z
+/** Stored as one international number (077 123 4567 becomes +263771234567), so a WhatsApp link always works. */
+export const phone = z
   .string()
   .trim()
-  .transform((v) => v.replace(/[\s\-()]/g, ""))
-  .refine((v) => /^\+?\d{9,15}$/.test(v), "Enter a WhatsApp number with country code, like +263 77 123 4567");
+  .transform(normalizeWhatsapp)
+  .refine(isPlausibleWhatsapp, WHATSAPP_ERROR);
 
 export const needsSchema = z.object({
   services: z.array(z.enum(SERVICES)).min(1, "Pick at least one"),

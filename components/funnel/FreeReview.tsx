@@ -19,7 +19,7 @@ type Win = { title: string; body: string; lever?: "leads" | "value" | "savings" 
 const LEVER_LABEL = { leads: "MORE CUSTOMERS", value: "WORTH MORE PER CUSTOMER", savings: "MONEY SAVED" } as const;
 type Review = { headline: string; opener: string; wins: Win[]; nextStep: string };
 type Phase = "form" | "working" | "done" | "queued";
-type Fields = Partial<Record<"name" | "email" | "url" | "process", string>>;
+type Fields = Partial<Record<"name" | "email" | "whatsapp" | "url" | "process", string>>;
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -162,6 +162,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
       mode,
       name: String(data.get("name") ?? ""),
       email: String(data.get("email") ?? ""),
+      whatsapp: String(data.get("whatsapp") ?? ""),
       url: mode === "site" ? String(data.get("url") ?? "") : "",
       process: mode === "process" ? String(data.get("process") ?? "") : "",
       documentText: mode === "process" && doc ? doc.text : "",
@@ -271,6 +272,17 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                 </label>
                 <Input id="fr-email" name="email" type="email" autoComplete="email" required maxLength={120} className={field} aria-invalid={Boolean(fieldErrors.email)} />
                 {fieldErrors.email && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.email}</p>}
+              </div>
+              <div>
+                <label htmlFor="fr-whatsapp" className={label}>
+                  Your WhatsApp number
+                </label>
+                <Input id="fr-whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="077 123 4567" required maxLength={24} className={field} aria-invalid={Boolean(fieldErrors.whatsapp)} />
+                {fieldErrors.whatsapp ? (
+                  <p className="mt-1.5 text-sm text-red-600">{fieldErrors.whatsapp}</p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-muted-foreground">So we can answer your questions about the review.</p>
+                )}
               </div>
               {mode === "site" ? (
                 <div>

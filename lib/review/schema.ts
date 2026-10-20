@@ -1,11 +1,15 @@
 import { z } from "zod";
 
+import { phone } from "@/lib/leads/schema";
+
 /** What the visitor wants reviewed. Either a public website address, or a manual process they want automated. */
 export const reviewRequestSchema = z
   .object({
     mode: z.enum(["site", "process"]),
     name: z.string().trim().min(2, "Tell us your name").max(80),
     email: z.string().trim().toLowerCase().email("Enter a valid email address").max(120),
+    /** Required: a phone number is the fastest way for us to follow up, and the review is worth a number. */
+    whatsapp: phone,
     url: z.string().trim().max(200).optional().or(z.literal("")),
     process: z.string().trim().max(600).optional().or(z.literal("")),
     /** Text the browser read out of an uploaded PDF or Word file. The file itself never reaches the server. */

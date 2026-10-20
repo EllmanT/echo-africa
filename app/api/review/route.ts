@@ -61,6 +61,8 @@ export async function POST(request: Request) {
   const allowed =
     (await allowRequest(`review:ip:${ip}`, PER_IP_PER_DAY, 86400, { failClosed: true })) &&
     (await allowRequest(`review:to:${mailboxKey(req.email)}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
+    // A phone number is a second identity: new email aliases cannot get around the per-person limit.
+    (await allowRequest(`review:wa:${req.whatsapp.replace(/\D/g, "")}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
     (await allowRequest("review:all", settings.reviewDailyCap, 86400, { failClosed: true }));
   if (!allowed) {
     return NextResponse.json({ ok: false, error: "You have used today's free reviews. Start a project instead and we will reply personally." }, { status: 429 });
@@ -145,6 +147,7 @@ export async function POST(request: Request) {
       leadId = await upsertLead(undefined, {
         name: req.name,
         email: req.email,
+        whatsapp: req.whatsapp,
         businessName: req.mode === "site" && siteUrl ? hostLabel(siteUrl) : "Free review (process)",
         services: [req.mode === "site" ? "website" : "ai-automation"],
         website: req.mode === "site" ? target : "",
@@ -165,7 +168,7 @@ export async function POST(request: Request) {
       review && visitorMailOk
         ? sendMail(reviewEmail({ name: req.name, email: req.email, mode: req.mode, review, leadId: leadId ?? undefined }))
         : Promise.resolve(false),
-      sendMail(reviewOwnerEmail({ to: settings.notifyEmail, name: req.name, email: req.email, mode: req.mode, subject: ownerSubject, target, review, failure: review ? undefined : failure, leadId: leadId ?? undefined })),
+      sendMail(reviewOwnerEmail({ to: settings.notifyEmail, name: req.name, email: req.email, whatsapp: req.whatsapp, mode: req.mode, subject: ownerSubject, target, review, failure: review ? undefined : failure, leadId: leadId ?? undefined })),
     ]);
 
     const leadRef = leadId ? signLeadRef(leadId) : null;
