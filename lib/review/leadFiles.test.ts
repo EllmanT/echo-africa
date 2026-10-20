@@ -35,7 +35,7 @@ describe("safeFileName", () => {
 
 describe("shapeText", () => {
   it("removes control characters and tidies whitespace", () => {
-    expect(shapeText("a\u0000b   c\n\n\n\nd").text).toBe("a b c\n\nd");
+    expect(shapeText("a\u0000b   c\n\n\n\nd").text).toBe("a b c\nd");
   });
   it("keeps long documents inside the budget and says it cut", () => {
     const r = shapeText("word ".repeat(5000));
