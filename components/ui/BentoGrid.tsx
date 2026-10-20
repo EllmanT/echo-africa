@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { IoCopyOutline } from "react-icons/io5";
 
 // Also install this npm i --save-dev @types/react-lottie
 // import Lottie from "react-lottie";
@@ -8,8 +6,6 @@ import { cn } from "@/lib/utils";
 
 import { BackgroundGradientAnimation } from "./GradientBg";
 import GridGlobe from "./GridGlobe";
-import animationData from "@/data/confetti.json";
-import MagicButton from "../MagicButton";
 
 export const BentoGrid = ({
   className,
@@ -53,23 +49,6 @@ export const BentoGridItem = ({
 }) => {
   const leftLists = ["Automation", "Websites", "Apps"];
   const rightLists = ["A I", "Logos", ""];
-
-  const [copied, setCopied] = useState(false);
-
-  const defaultOptions = {
-    loop: copied,
-    autoplay: copied,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
-
-  const handleCopy = () => {
-    const text = "tmuranda1@gmail.com";
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-  };
 
   return (
     <div
@@ -134,7 +113,7 @@ export const BentoGridItem = ({
           <div
             className={cn(
               "font-sans text-lg lg:text-3xl max-w-96 font-bold z-10",
-              id === 5 || id === 6 ? "text-black" : "text-white",
+              id === 5 || id === 6 || id === 4 ? "text-black" : "text-white",
             )}
           >
             {title}
@@ -173,28 +152,27 @@ export const BentoGridItem = ({
               </div>
             </div>
           )}
+          {/* The two story cards answer a question a visitor may be asking, then point at the work below. */}
           {id === 6 && (
-            <div className="mt-5 relative">
-              {/* button border magic from tailwind css buttons  */}
-              {/* add rounded-md h-8 md:h-8, remove rounded-full */}
-              {/* remove focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50 */}
-              {/* add handleCopy() for the copy the text */}
-              <div
-                className={`absolute -bottom-5 right-0 ${
-                  copied ? "block" : "block"
-                }`}
+            <div className="mt-3 relative z-10">
+              <p className="max-w-sm text-base leading-snug text-black/70">
+                Most owners start with one problem: too few enquiries, too much typing, or a site that looks tired. Tell us the problem and we point you to the fix.
+              </p>
+              <a
+                href="#projects"
+                className="group/link mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-purple focus-visible:outline-none focus-visible:underline"
               >
-                {/* <img src="/confetti.gif" alt="confetti" /> */}
-                {/* <Lottie options={defaultOptions} height={200} width={400} /> */}
-              </div>
-
-              <MagicButton
-                title={copied ? "Email is Copied!" : "Copy my email address"}
-                icon={<IoCopyOutline />}
-                position="left"
-                handleClick={handleCopy}
-              />
+                See what we have built
+                <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5 transition-transform duration-200 ease-out-strong group-hover/link:translate-y-0.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 3 V13 M3.5 8.5 L8 13 L12.5 8.5" />
+                </svg>
+              </a>
             </div>
+          )}
+          {id === 4 && (
+            <p className="mt-3 max-w-sm text-base leading-snug text-black/70 z-10">
+              Then you pay nothing. We build it first, you look it over, and you only pay when you are happy. No deposit.
+            </p>
           )}
         </div>
       </div>

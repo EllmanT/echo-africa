@@ -244,7 +244,7 @@ if (ADMIN_PW) {
 // ---------------------------------------------------------------- free review (AI) endpoint
 {
   const rv = (over = {}) => ({
-    mode: "site", name: "Review Tester", email: `rv+${Math.random().toString(36).slice(2)}@example.com`, url: "https://example.com",
+    mode: "site", name: "Review Tester", email: `rv+${Math.random().toString(36).slice(2)}@example.com`, whatsapp: `+26377${Math.floor(1000000 + Math.random() * 8999999)}`, url: "https://example.com",
     source: "attack-suite", elapsedMs: 9000, company: "", turnstileToken: "suite-token", ...over,
   });
   const big = await call("/api/review", { method: "POST", raw: JSON.stringify({ ...rv(), url: "a".repeat(6000) }) });

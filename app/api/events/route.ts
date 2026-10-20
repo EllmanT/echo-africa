@@ -17,6 +17,9 @@ const ALLOWED = [
   "whatsapp_click",
   "review_start",
   "review_done",
+  "review_file",
+  "picker_select",
+  "picker_continue",
 ] as const;
 
 const eventSchema = z.object({

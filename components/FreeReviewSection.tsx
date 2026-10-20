@@ -5,7 +5,7 @@ import { FaCheck } from "react-icons/fa6";
 import Reveal from "@/components/Reveal";
 import FreeReview from "@/components/funnel/FreeReview";
 
-const POINTS = ["3 specific fixes, not generic tips", "Written for your business in about a minute", "Yours to keep, even if we never work together"];
+const POINTS = ["Three specific fixes for your business, not generic tips", "Ready in about 20 seconds, and a copy lands in your inbox", "Yours to keep, whether or not we ever work together"];
 
 /** The soft offer for visitors who are not ready for the full form. */
 const FreeReviewSection = ({ from = "home" }: { from?: string }) => (
@@ -13,12 +13,11 @@ const FreeReviewSection = ({ from = "home" }: { from?: string }) => (
     <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16">
       <Reveal>
         <div>
-          <p className="text-sm font-extrabold tracking-[0.14em] text-purple">FREE, NO CALL</p>
-          <h2 id="free-review-heading" className="heading mt-3 text-left">
-            Not ready for the form? Get a free review.
+          <h2 id="free-review-heading" className="heading !text-left">
+            Find out what is costing you customers.
           </h2>
           <p className="mt-5 max-w-lg text-lg leading-relaxed text-muted-foreground">
-            Give us your website, or a task your team does by hand. We tell you exactly what to fix first.
+            Send us your website, or a task your team does by hand. In about 20 seconds you get the three fixes most likely to bring in more customers or save you money.
           </p>
           <ul className="mt-7 grid gap-3">
             {POINTS.map((p) => (

@@ -40,7 +40,7 @@ export const gridItems = [
   },
   {
     id: 6,
-    title: "Ready to work with us?",
+    title: "Not sure what you need?",
     description: "",
     className: "lg:col-span-2 md:col-span-3 md:row-span-1",
     imgClassName: "",
@@ -62,7 +62,7 @@ export const gridItems = [
   },
   {
     id: 4,
-    title: "Zero risk. You only pay when you're satisfied.",
+    title: "What if I do not love it?",
     description: "",
     className: "lg:col-span-2 md:col-span-3 md:row-span-1",
     imgClassName: "",

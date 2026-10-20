@@ -14,7 +14,7 @@ const Field = ({ label, hint, children }: { label: string; hint?: string; childr
 const inputClass =
   "h-11 w-full rounded-xl border border-black/[0.12] bg-white px-3 text-sm focus-visible:border-purple focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple/15";
 
-const SettingsForm = ({ initial, spentUsd = 0 }: { initial: AdminSettings; spentUsd?: number }) => {
+const SettingsForm = ({ initial, spentUsd = 0, reviewSpentUsd = 0 }: { initial: AdminSettings; spentUsd?: number; reviewSpentUsd?: number }) => {
   const [values, setValues] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -66,6 +66,85 @@ const SettingsForm = ({ initial, spentUsd = 0 }: { initial: AdminSettings; spent
           step={0.5}
           value={values.monthlyBudgetUsd}
           onChange={(e) => setValues({ ...values, monthlyBudgetUsd: Number(e.target.value) })}
+          className={inputClass}
+        />
+      </Field>
+
+      <h2 className="pt-4 font-display text-lg font-bold tracking-tight">Instant website review</h2>
+
+      <Field label="Instant review on" hint="Off means visitors are told a person will reply instead. The REVIEW_ENABLED=false setting in Vercel overrides this and always wins.">
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={values.reviewEnabled}
+            onChange={(e) => setValues({ ...values, reviewEnabled: e.target.checked })}
+            className="h-5 w-5 accent-purple"
+          />
+          Produce reviews automatically
+        </label>
+      </Field>
+
+      <Field label="Reviews per day, whole site" hint="Once this many are produced in a day, everyone else is asked to come back tomorrow. Each review costs well under a cent.">
+        <input
+          type="number"
+          min={0}
+          max={500}
+          value={values.reviewDailyCap}
+          onChange={(e) => setValues({ ...values, reviewDailyCap: Number(e.target.value) })}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field
+        label="Review monthly budget (USD)"
+        hint={`A hard ceiling on review spend this month. Spent so far: $${reviewSpentUsd.toFixed(2)}. At the ceiling, visitors get a personal reply instead of an instant review.`}
+      >
+        <input
+          type="number"
+          min={0}
+          max={100}
+          step={0.5}
+          value={values.reviewMonthlyBudgetUsd}
+          onChange={(e) => setValues({ ...values, reviewMonthlyBudgetUsd: Number(e.target.value) })}
+          className={inputClass}
+        />
+      </Field>
+
+      <h2 className="pt-4 font-display text-lg font-bold tracking-tight">Daily Playbook email</h2>
+
+      <Field label="Daily email on" hint="Every lead is subscribed when they share their details, and each email has an unsubscribe link. Off pauses the sending for everyone.">
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={values.digestEnabled}
+            onChange={(e) => setValues({ ...values, digestEnabled: e.target.checked })}
+            className="h-5 w-5 accent-purple"
+          />
+          Send the short email for each new article
+        </label>
+      </Field>
+
+      <Field label="Send from (Harare time)" hint="Today's email goes out from this hour, once today's article is live. The article itself is written at 08:00.">
+        <select
+          value={values.digestHour}
+          onChange={(e) => setValues({ ...values, digestHour: Number(e.target.value) })}
+          className={inputClass}
+        >
+          {Array.from({ length: 20 }, (_, h) => (
+            <option key={h} value={h}>
+              {String(h).padStart(2, "0")}:00
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Emails per day, at most" hint="Gmail limits how much one account can send. Keep this under 400 so your lead alerts are never blocked.">
+        <input
+          type="number"
+          min={0}
+          max={1000}
+          value={values.digestDailyCap}
+          onChange={(e) => setValues({ ...values, digestDailyCap: Number(e.target.value) })}
           className={inputClass}
         />
       </Field>

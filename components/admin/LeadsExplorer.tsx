@@ -88,6 +88,17 @@ const LeadDrawer = ({ lead, onClose, onSaved }: { lead: AdminLead; onClose: () =
           <DetailRow label="Timing" value={lead.timing} />
           <DetailRow label="Budget" value={budgetDisplay(lead)} />
           <DetailRow label="Notes from the lead" value={lead.notes} />
+          {lead.fileName && (
+            <div className="border-b border-black/[0.06] py-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Shared document</dt>
+              <dd className="mt-1 text-sm">
+                <a href={`/api/admin/leads/${lead._id}/file`} className="font-semibold text-purple underline-offset-2 hover:underline">
+                  Download {lead.fileName}
+                </a>{" "}
+                <span className="text-muted-foreground">({Math.max(1, Math.round((lead.fileSize ?? 0) / 1024))} KB). Ask before using it publicly.</span>
+              </dd>
+            </div>
+          )}
           <DetailRow label="Score" value={lead.score !== undefined ? `${lead.score} / 100` : undefined} />
           <DetailRow label="Source page" value={lead.source} />
           <DetailRow label="Received" value={formatDate(lead.createdAt)} />

@@ -20,6 +20,11 @@ export type LeadDoc = Partial<LeadInput> & {
   notes?: string;
   internalNotes?: string;
   tags?: string[];
+  /** When the lead was subscribed to the daily Playbook email (set when they first shared their details). Unsubscribing sets `unsubscribed`. */
+  digestSubscribedAt?: Date;
+  /** A document the lead shared with their free review. The file itself lives in the leadFiles collection. */
+  fileName?: string;
+  fileSize?: number;
   emailsSent?: { type: string; at: Date; ok: boolean }[];
   /** True once the lead has clicked an unsubscribe link. Nurture emails stop; the two transactional emails on submit already happened by then. */
   unsubscribed?: boolean;
@@ -42,19 +47,31 @@ export async function upsertLead(
   const now = new Date();
   const existing = toObjectId(leadId);
 
+  // Someone who unsubscribed once stays unsubscribed on every later form, whichever lead record it creates.
+  const optedOut = async (email?: string): Promise<boolean> =>
+    Boolean(email) && (await col.countDocuments({ email: String(email).toLowerCase(), unsubscribed: true }, { limit: 1 })) > 0;
+
   if (existing) {
     const res = await col.findOneAndUpdate(
       { _id: existing },
       { $set: { ...fields, updatedAt: now } },
       { returnDocument: "after" }
     );
-    if (res) return existing.toHexString();
+    if (res) {
+      // The form shows the opt-out line, so a lead who (re)submits their details is subscribed unless they opted out.
+      if (res.email && !res.digestSubscribedAt && !res.unsubscribed && !(await optedOut(res.email))) {
+        await col.updateOne({ _id: existing }, { $set: { digestSubscribedAt: now } });
+      }
+      return existing.toHexString();
+    }
   }
 
+  const blocked = await optedOut(fields.email);
   const inserted = await col.insertOne({
     status: "partial",
     createdAt: now,
     ...fields,
+    ...(fields.email ? (blocked ? { unsubscribed: true } : { digestSubscribedAt: now }) : {}),
     updatedAt: now,
   } as LeadDoc);
   return inserted.insertedId.toHexString();

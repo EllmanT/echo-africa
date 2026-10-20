@@ -5,24 +5,68 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { FaArrowRight, FaWhatsapp } from "react-icons/fa6";
 
+import { EchoBar, EchoDots } from "@/components/funnel/EchoProgress";
 import TurnstileWidget, { TURNSTILE_SITE_KEY } from "@/components/security/TurnstileWidget";
 import { Input, Textarea } from "@/components/ui/input";
 import { track } from "@/lib/analytics/track";
+import type { ExtractedDocument } from "@/lib/review/extractDocument";
 import { siteConfig } from "@/lib/seo/site";
 import { cn } from "@/lib/utils";
 
 type Mode = "site" | "process";
-type Win = { title: string; body: string };
+type Win = { title: string; body: string; lever?: "leads" | "value" | "savings" };
+
+const LEVER_LABEL = { leads: "MORE CUSTOMERS", value: "WORTH MORE PER CUSTOMER", savings: "MONEY SAVED" } as const;
 type Review = { headline: string; opener: string; wins: Win[]; nextStep: string };
 type Phase = "form" | "working" | "done" | "queued";
-type Fields = Partial<Record<"name" | "email" | "url" | "process", string>>;
+type Fields = Partial<Record<"name" | "email" | "whatsapp" | "url" | "process", string>>;
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
-const STAGES: Record<Mode, string[]> = {
-  site: ["Opening your site", "Reading your pages", "Spotting the quick wins", "Writing your review"],
-  process: ["Reading what you wrote", "Finding what can be automated", "Working out the time saved", "Writing your review"],
+type Stage = "start" | "open" | "read" | "think" | "write" | "done";
+
+/** What the server is really doing, in the visitor's words. */
+const STAGE_LABEL: Record<Mode, Record<Stage, string>> = {
+  site: {
+    start: "Getting started",
+    open: "Opening your website",
+    read: "Reading your pages",
+    think: "Finding what is costing you customers",
+    write: "Writing up your three fixes",
+    done: "Done",
+  },
+  process: {
+    start: "Getting started",
+    open: "Reading what you wrote",
+    read: "Reading what you wrote",
+    think: "Finding what can run without you",
+    write: "Writing up your three fixes",
+    done: "Done",
+  },
 };
+
+/** The bar jumps to the floor when the server reports a stage, then creeps toward the cap while that stage runs. */
+const FLOOR: Record<Stage, number> = { start: 0.06, open: 0.16, read: 0.32, think: 0.45, write: 0.92, done: 1 };
+const CAP: Record<Stage, number> = { start: 0.14, open: 0.3, read: 0.44, think: 0.9, write: 0.97, done: 1 };
+
+/** Reads a streamed reply, calling `onEvent` once per line. */
+async function readEvents(res: Response, onEvent: (e: Record<string, unknown>) => void) {
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No response");
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let nl: number;
+    while ((nl = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (line) onEvent(JSON.parse(line));
+    }
+  }
+}
 
 const label = "mb-1.5 block text-sm font-semibold";
 const field = "w-full";
@@ -32,32 +76,81 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
   const reduce = useReducedMotion();
   const [mode, setMode] = useState<Mode>("site");
   const [phase, setPhase] = useState<Phase>("form");
-  const [stage, setStage] = useState(0);
+  const [stage, setStage] = useState<Stage>("start");
+  const [progress, setProgress] = useState(0);
+  const [target, setTarget] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Fields>({});
   const [review, setReview] = useState<Review | null>(null);
   const [emailed, setEmailed] = useState(false);
   const [humanToken, setHumanToken] = useState<string | null>(null);
   const [humanReset, setHumanReset] = useState(0);
+  // What the visitor typed, so an error (a typo in the address, a limit, a dropped connection) never empties the form.
+  const [saved, setSaved] = useState({ name: "", email: "", whatsapp: "", url: "", process: "" });
   const startedAt = useRef<number | null>(null);
+  const startedTracked = useRef(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [doc, setDoc] = useState<ExtractedDocument | null>(null);
+  const pickedFile = useRef<File | null>(null);
+  const [docBusy, setDocBusy] = useState(false);
+  const [docError, setDocError] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const sentService = useRef<string>("website");
 
-  // The wait is real (we fetch the site, then think), so say what is happening instead of a bare spinner.
+  // Between server updates the bar creeps forward so it never looks stuck, but it never passes the stage's cap.
   useEffect(() => {
     if (phase !== "working") return;
-    setStage(0);
-    const id = window.setInterval(() => setStage((s) => Math.min(s + 1, STAGES[mode].length - 1)), 2600);
+    const id = window.setInterval(() => setProgress((p) => (p < CAP[stage] ? p + (CAP[stage] - p) * 0.07 : p)), 250);
     return () => window.clearInterval(id);
-  }, [phase, mode]);
+  }, [phase, stage]);
+
+  const goStage = (next: Stage) => {
+    setStage(next);
+    setProgress((p) => Math.max(p, FLOOR[next]));
+  };
+
+  // The honeypot timer starts when the form appears, not on first focus: autofill and paste can finish a form before any focus event.
+  useEffect(() => {
+    if (phase === "form" && startedAt.current === null) startedAt.current = Date.now();
+  }, [phase]);
 
   useEffect(() => {
     if (phase === "done" || phase === "queued") headingRef.current?.focus();
   }, [phase]);
 
+  // The reader (PDF and Word libraries) loads only now, when someone actually picks a file.
+  const onFile = async (file: File | undefined) => {
+    if (!file) return;
+    setDocError(null);
+    setDocBusy(true);
+    try {
+      const { extractDocument } = await import("@/lib/review/extractDocument");
+      setDoc(await extractDocument(file));
+      pickedFile.current = file;
+      track("review_file");
+    } catch (err) {
+      setDoc(null);
+      setDocError(err instanceof Error && err.message ? err.message : "We could not read that file. Paste the key steps instead.");
+    } finally {
+      setDocBusy(false);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  };
+
+  // Sends the original file to be kept with the lead. Quiet by design: the review never depends on it.
+  const keepFile = (leadRef: unknown) => {
+    const file = pickedFile.current;
+    pickedFile.current = null;
+    if (!file || mode !== "process" || typeof leadRef !== "string") return;
+    const body = new FormData();
+    body.append("leadRef", leadRef);
+    body.append("file", file);
+    fetch("/api/review/file", { method: "POST", body, keepalive: false }).catch(() => undefined);
+  };
+
   const begin = () => {
-    if (startedAt.current === null) {
-      startedAt.current = Date.now();
+    if (!startedTracked.current) {
+      startedTracked.current = true;
       track("review_start");
     }
   };
@@ -67,35 +160,68 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
     setError(null);
     setFieldErrors({});
     const data = new FormData(e.currentTarget);
+    setSaved({
+      name: String(data.get("name") ?? ""),
+      email: String(data.get("email") ?? ""),
+      whatsapp: String(data.get("whatsapp") ?? ""),
+      url: String(data.get("url") ?? ""),
+      process: String(data.get("process") ?? ""),
+    });
+    setHumanToken(null); // A Turnstile token works once. The form asks for a fresh one if it comes back.
     const payload = {
       mode,
       name: String(data.get("name") ?? ""),
       email: String(data.get("email") ?? ""),
+      whatsapp: String(data.get("whatsapp") ?? ""),
       url: mode === "site" ? String(data.get("url") ?? "") : "",
       process: mode === "process" ? String(data.get("process") ?? "") : "",
+      documentText: mode === "process" && doc ? doc.text : "",
+      documentName: mode === "process" && doc ? doc.name : "",
       source: from,
       elapsedMs: startedAt.current ? Date.now() - startedAt.current : 0,
-      company: String(data.get("company") ?? ""),
+      company: String(data.get("hp_ref") ?? ""),
       turnstileToken: humanToken ?? undefined,
     };
     sentService.current = mode === "site" ? "website" : "ai-automation";
+    setTarget(mode === "site" ? payload.url.replace(/^https?:\/\//i, "").replace(/\/.*$/, "") : "");
+    setStage("start");
+    setProgress(0.03);
     setPhase("working");
     try {
       const res = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      const json = await res.json().catch(() => null);
-      if (!res.ok || !json?.ok) {
-        const issues = json?.issues as Record<string, string[]> | undefined;
+      const fail = (message: string, issues?: Record<string, string[]>) => {
         if (issues) setFieldErrors(Object.fromEntries(Object.entries(issues).map(([k, v]) => [k, v[0]])) as Fields);
-        throw new Error(json?.error ?? "Something went wrong. Please try again.");
+        throw new Error(message);
+      };
+      if (!(res.headers.get("content-type") ?? "").includes("ndjson")) {
+        // Validation, rate-limit and bot-check replies are plain JSON (or a queued notice for suspected bots).
+        const json = await res.json().catch(() => null);
+        if (json?.queued) {
+          setPhase("queued");
+          return;
+        }
+        fail(json?.error ?? "Something went wrong. Please try again.", json?.issues);
       }
-      track("review_done");
-      setEmailed(Boolean(json.emailed));
-      if (json.queued || !json.review) {
-        setPhase("queued");
-      } else {
-        setReview(json.review as Review);
-        setPhase("done");
-      }
+      let finished = false;
+      await readEvents(res, (e) => {
+        if (e.t === "stage") goStage(e.stage as Stage);
+        else if (e.t === "error") fail(String(e.error ?? "Something went wrong. Please try again."), e.issues as Record<string, string[]> | undefined);
+        else if (e.t === "queued") {
+          finished = true;
+          track("review_done");
+          keepFile(e.leadRef);
+          setPhase("queued");
+        } else if (e.t === "done") {
+          finished = true;
+          track("review_done");
+          keepFile(e.leadRef);
+          setEmailed(Boolean(e.emailed));
+          setReview(e.review as Review);
+          goStage("done");
+          window.setTimeout(() => setPhase("done"), 450);
+        }
+      });
+      if (!finished) throw new Error("The connection dropped. Please try again.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setHumanReset((n) => n + 1); // Turnstile tokens are single use.
@@ -147,22 +273,33 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                 <label htmlFor="fr-name" className={label}>
                   Your name
                 </label>
-                <Input id="fr-name" name="name" autoComplete="name" required minLength={2} maxLength={80} className={field} aria-invalid={Boolean(fieldErrors.name)} />
+                <Input id="fr-name" name="name" defaultValue={saved.name} autoComplete="name" required minLength={2} maxLength={80} className={field} aria-invalid={Boolean(fieldErrors.name)} />
                 {fieldErrors.name && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.name}</p>}
               </div>
               <div>
                 <label htmlFor="fr-email" className={label}>
                   Your email
                 </label>
-                <Input id="fr-email" name="email" type="email" autoComplete="email" required maxLength={120} className={field} aria-invalid={Boolean(fieldErrors.email)} />
+                <Input id="fr-email" name="email" defaultValue={saved.email} type="email" autoComplete="email" required maxLength={120} className={field} aria-invalid={Boolean(fieldErrors.email)} />
                 {fieldErrors.email && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.email}</p>}
+              </div>
+              <div>
+                <label htmlFor="fr-whatsapp" className={label}>
+                  Your WhatsApp number
+                </label>
+                <Input id="fr-whatsapp" name="whatsapp" defaultValue={saved.whatsapp} type="tel" inputMode="tel" autoComplete="tel" placeholder="077 123 4567" required maxLength={24} className={field} aria-invalid={Boolean(fieldErrors.whatsapp)} />
+                {fieldErrors.whatsapp ? (
+                  <p className="mt-1.5 text-sm text-red-600">{fieldErrors.whatsapp}</p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-muted-foreground">So we can answer your questions about the review.</p>
+                )}
               </div>
               {mode === "site" ? (
                 <div>
                   <label htmlFor="fr-url" className={label}>
                     Your website address
                   </label>
-                  <Input id="fr-url" name="url" inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="yourbusiness.co.zw" required maxLength={200} className={field} aria-invalid={Boolean(fieldErrors.url)} />
+                  <Input id="fr-url" name="url" defaultValue={saved.url} inputMode="url" autoCapitalize="none" autoCorrect="off" placeholder="yourbusiness.co.zw" required maxLength={200} className={field} aria-invalid={Boolean(fieldErrors.url)} />
                   {fieldErrors.url && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.url}</p>}
                 </div>
               ) : (
@@ -173,23 +310,70 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                   <Textarea
                     id="fr-process"
                     name="process"
+                    defaultValue={saved.process}
                     rows={4}
-                    required
-                    minLength={20}
+                    required={!doc}
+                    minLength={doc ? 0 : 20}
                     maxLength={600}
                     placeholder="Example: We copy orders from WhatsApp into a spreadsheet, then type them again into our invoicing system."
                     className={field}
                     aria-invalid={Boolean(fieldErrors.process)}
                   />
                   {fieldErrors.process && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.process}</p>}
+
+                  {/* Already written the process down? Read it here, in the browser: nothing is uploaded or stored. */}
+                  <input
+                    ref={fileInput}
+                    id="fr-file"
+                    type="file"
+                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="sr-only"
+                    onChange={(e) => onFile(e.target.files?.[0])}
+                    tabIndex={-1}
+                  />
+                  {doc ? (
+                    <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm">
+                      <span className="min-w-0">
+                        <span className="block truncate font-semibold">{doc.name}</span>
+                        <span className="block text-muted-foreground">
+                          {doc.words.toLocaleString()} words read{doc.truncated ? ", we use the first part" : ""}.
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDoc(null);
+                          pickedFile.current = null;
+                        }}
+                        className="shrink-0 rounded-lg px-2 py-1 font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple/20"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => fileInput.current?.click()}
+                      disabled={docBusy}
+                      className="mt-3 inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold transition-[transform,color] duration-150 ease-out-strong hover:text-purple active:scale-[0.97] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple/20"
+                    >
+                      {docBusy ? "Reading your file..." : "Or upload a PDF or Word file"}
+                    </button>
+                  )}
+                  {!doc && !docBusy && <p className="mt-1.5 text-xs text-muted-foreground">PDF or Word, up to 4MB. We keep it private to help you, and never share it or your name without asking you first.</p>}
+                  {docError && (
+                    <p role="alert" className="mt-1.5 text-sm text-red-600">
+                      {docError}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
 
             {/* Honeypot: invisible to people, irresistible to form-filling bots. */}
             <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-              <label htmlFor="fr-company">Company</label>
-              <input id="fr-company" name="company" tabIndex={-1} autoComplete="off" />
+              <label htmlFor="fr-hp-ref">Leave this field empty</label>
+              <input id="fr-hp-ref" name="hp_ref" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
             </div>
 
             <TurnstileWidget action="review" onToken={setHumanToken} resetSignal={humanReset} />
@@ -212,21 +396,15 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
               {mode === "site" ? "Review my website" : "Review my process"}
               <FaArrowRight size={13} className="transition-transform duration-200 ease-out-strong group-hover:translate-x-1" />
             </button>
-            <p className="mt-4 text-center text-sm text-muted-foreground">Free. No call. No card. Your review is written by our AI assistant in about a minute.</p>
+            <p className="mt-4 text-center text-sm text-muted-foreground">Takes about 20 seconds. No call, no card.</p>
+            <p className="mt-2 text-center text-xs text-muted-foreground">You will also get Tapiwa&apos;s short daily tips by email. Unsubscribe anytime.</p>
           </motion.form>
         )}
 
         {phase === "working" && (
-          <motion.div key="working" {...fade} aria-busy="true" role="status" className="flex min-h-[22rem] flex-col items-center justify-center text-center">
-            <div className="relative h-1.5 w-48 overflow-hidden rounded-full bg-purple/15">
-              <motion.span
-                className="absolute inset-y-0 left-0 w-full origin-left rounded-full bg-purple"
-                initial={{ scaleX: 0.04 }}
-                animate={{ scaleX: 0.92 }}
-                transition={{ duration: reduce ? 0 : 22, ease: EASE }}
-              />
-            </div>
-            <div className="relative mt-8 h-8 w-full">
+          <motion.div key="working" {...fade} aria-busy="true" role="status" aria-live="polite" className="flex min-h-[24rem] flex-col items-center justify-center text-center">
+            <EchoDots />
+            <div className="relative mt-6 h-8 w-full">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.p
                   key={stage}
@@ -236,11 +414,16 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                   transition={{ duration: 0.18, ease: EASE }}
                   className="absolute inset-x-0 font-display text-xl font-bold tracking-tight"
                 >
-                  {STAGES[mode][stage]}...
+                  {STAGE_LABEL[mode][stage]}...
                 </motion.p>
               </AnimatePresence>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">Usually under a minute. Please keep this page open.</p>
+            <div className="mt-4 flex w-full justify-center">
+              <EchoBar value={progress} label="Review progress" />
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {target ? `The Eka team is reviewing ${target}. ` : "The Eka team is reviewing what you wrote. "}Usually about 20 seconds.
+            </p>
           </motion.div>
         )}
 
@@ -260,7 +443,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
                   transition={{ duration: 0.28, delay: reduce ? 0 : 0.12 + i * 0.07, ease: EASE }}
                   className="rounded-2xl bg-white p-5 md:p-6"
                 >
-                  <p className="text-xs font-extrabold tracking-[0.12em] text-purple">WIN {i + 1}</p>
+                  <p className="text-xs font-extrabold tracking-[0.12em] text-purple">{LEVER_LABEL[w.lever ?? "leads"]}</p>
                   <p className="mt-1.5 font-display text-xl font-bold leading-snug tracking-tight">{w.title}</p>
                   <p className="mt-2 text-base leading-relaxed text-muted-foreground">{w.body}</p>
                 </motion.li>
@@ -292,7 +475,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
               </div>
               <p className="mt-5 text-sm text-muted-foreground">
                 {emailed ? "A copy is on its way to your inbox. " : ""}
-                Drafted by our AI assistant from what is public on your site. Reply to the email and Tapiwa follows up personally.
+                Written by the Eka team from what is public on your site. Reply to the email and Tapiwa follows up personally.
               </p>
             </motion.div>
           </motion.div>
@@ -304,7 +487,7 @@ const FreeReview = ({ from = "home", className }: { from?: string; className?: s
               Got it. Your review is coming.
             </h3>
             <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-muted-foreground">
-              We could not produce it instantly this time, so Tapiwa will write it and email you within a day. No need to do anything.
+              Our team is finishing it by hand this time and will email it to you within a day. No need to do anything.
             </p>
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link

@@ -37,12 +37,12 @@ const Home = () => {
         <JsonLd data={buildFAQSchema(homeFaqs)} />
         <SiteHeader />
         <Hero />
-        <ServicePicker />
         <Grid />
         <RecentProjects />
         <Clients />
         <Approach />
         <FreeReviewSection />
+        <ServicePicker />
         <Footer />
       </div>
     </main>

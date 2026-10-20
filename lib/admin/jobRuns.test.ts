@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { NURTURE_SLOT, publishedArticleFilter, startOfHarareDayUtc } from "./jobRuns";
+import { DIGEST_SLOT, NURTURE_SLOT, publishedArticleFilter, startOfHarareDayUtc } from "./jobRuns";
 
 describe("publishedArticleFilter", () => {
-  it("excludes nurture runs so they can never fill the daily article cap", () => {
+  it("excludes nurture and digest runs so they can never fill the daily article cap", () => {
     const f = publishedArticleFilter(new Date("2026-10-11T00:00:00Z"));
-    expect(f.slot).toEqual({ $ne: NURTURE_SLOT });
+    expect(f.slot).toEqual({ $nin: [NURTURE_SLOT, DIGEST_SLOT] });
     expect(f.status).toBe("published");
   });
 });

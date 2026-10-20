@@ -50,7 +50,7 @@ const STEPS = [
   },
   {
     title: "Where can we reach you?",
-    hint: "We reply on WhatsApp and by email.",
+    hint: "We reply on WhatsApp and by email. You will also get our short daily tips. Unsubscribe anytime.",
     fields: ["name", "email", "whatsapp"] as const,
   },
   {
@@ -123,9 +123,13 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
 
   // Deep links like /contact?service=logo pre-select that service (the Services page uses these).
   useEffect(() => {
-    const wanted = new URLSearchParams(window.location.search).get("service");
-    if (wanted && wanted !== "not-sure" && (SERVICES as readonly string[]).includes(wanted)) {
-      form.setValue("services", [wanted as Service]);
+    // One service ("logo") or several ("website,ai-automation", from the homepage picker). Unknown values are ignored.
+    const wanted = (new URLSearchParams(window.location.search).get("service") ?? "")
+      .split(",")
+      .filter((v, i, all) => v !== "not-sure" && (SERVICES as readonly string[]).includes(v) && all.indexOf(v) === i)
+      .slice(0, SERVICES.length) as Service[];
+    if (wanted.length) {
+      form.setValue("services", wanted);
       // Question 1 is already answered, so start on question 2 (Back still lets them change it).
       setStep((s) => (s === 0 ? 1 : s));
     }
@@ -221,7 +225,7 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
     }
 
     // Final step: send everything.
-    const honeypot = (document.getElementById("company") as HTMLInputElement | null)?.value;
+    const honeypot = (document.getElementById("hp-ref") as HTMLInputElement | null)?.value;
     const values = form.getValues();
     setBusy(true);
     try {
@@ -544,10 +548,10 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
                   )}
                 </div>
 
-                {/* Honeypot: hidden from people, tempting to bots. */}
+                {/* Honeypot: hidden from people, tempting to bots. Named so browser autofill never fills it (a field called "company" gets autofilled, which silently dropped real leads). */}
                 <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-                  <label htmlFor="company">Company</label>
-                  <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+                  <label htmlFor="hp-ref">Leave this field empty</label>
+                  <input id="hp-ref" name="hp_ref" type="text" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                 </div>
 
                 {error && (

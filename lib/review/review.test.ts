@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildReviewPrompt, cleanText, sanitizeReview } from "./generate";
+import { mailboxKey } from "./schema";
 import { extractSiteFacts, siteFactsToPrompt, unreadableFacts } from "./siteFacts";
 
 const PAGE = `<!doctype html><html lang="en"><head><title>Zim Motors | Used cars Harare</title>
@@ -41,6 +42,18 @@ describe("buildReviewPrompt", () => {
   });
 });
 
+describe("mailboxKey", () => {
+  it("treats plus tags, gmail dots and googlemail as the same person", () => {
+    const k = mailboxKey("Tapiwa.Muranda1@gmail.com");
+    expect(mailboxKey("tapiwamuranda1+a@gmail.com")).toBe(k);
+    expect(mailboxKey("t.a.p.i.w.a.muranda1+zz@googlemail.com")).toBe(k);
+  });
+  it("keeps dots for other providers and tells domains apart", () => {
+    expect(mailboxKey("a.b+x@company.co.zw")).toBe("a.b@company.co.zw");
+    expect(mailboxKey("ab@company.co.zw")).not.toBe(mailboxKey("a.b@company.co.zw"));
+  });
+});
+
 describe("cleanText", () => {
   it("removes dashes, links, markup and tidies spacing", () => {
     expect(cleanText("Fix this — now, see https://evil.example/x and **bold** <b>tag</b>", 200)).toBe("Fix this, now, see and bold tag");
@@ -65,6 +78,10 @@ describe("sanitizeReview", () => {
   };
   it("accepts a complete review", () => {
     expect(sanitizeReview(good).wins).toHaveLength(3);
+  });
+  it("keeps a valid lever and falls back to leads for anything else", () => {
+    const r = sanitizeReview({ ...good, wins: [{ ...good.wins[0], lever: "savings" }, { ...good.wins[1], lever: "bogus" }, good.wins[2]] });
+    expect(r.wins.map((w) => w.lever)).toEqual(["savings", "leads", "leads"]);
   });
   it("rejects incomplete or malformed output", () => {
     expect(() => sanitizeReview({ ...good, wins: good.wins.slice(0, 2) })).toThrow();
