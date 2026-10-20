@@ -6,9 +6,9 @@ import { sendMail } from "@/lib/email/send";
 import { upsertLead } from "@/lib/leads/repository";
 import { signLeadRef } from "@/lib/leads/leadRef";
 import { allowRequest, clientIp, readJsonLimited } from "@/lib/rateLimit";
-import { reviewEnabled, reviewHasBudget, recordReviewUsage } from "@/lib/review/budget";
-import { generateReview, type Review } from "@/lib/review/generate";
-import { hostLabel, normalizeSiteUrl, reviewRequestSchema } from "@/lib/review/schema";
+import { recordReviewUsage, reviewHasBudget } from "@/lib/review/budget";
+import { generateReview, ReviewGenerationError, type Review } from "@/lib/review/generate";
+import { hostLabel, mailboxKey, normalizeSiteUrl, reviewRequestSchema } from "@/lib/review/schema";
 import { extractSiteFacts, unreadableFacts } from "@/lib/review/siteFacts";
 import { isPublicHttpUrl, fetchPublicText } from "@/lib/security/safeUrl";
 import { verifyTurnstile } from "@/lib/security/turnstile";
@@ -21,7 +21,6 @@ const MIN_FILL_TIME_MS = 3000;
 /** Limits that protect the AI bill and the mailbox. Per IP, per address, and for the whole site per day. */
 const PER_IP_PER_DAY = 3;
 const PER_EMAIL_PER_DAY = 2;
-const GLOBAL_PER_DAY = 40;
 const REVIEW_MAILS_PER_DAY = 80;
 
 /** The visitor is always told their request arrived; when the AI path is closed a human replies instead. */
@@ -55,11 +54,13 @@ export async function POST(request: Request) {
   }
 
   const ip = clientIp(request.headers);
+  const settings = await getAdminSettings();
   // Every AI call costs money, so the limits fail closed: if the counter is unreachable, nobody gets a review.
+  // The mailbox limit uses the normalised address, so +tags and gmail dots cannot multiply it.
   const allowed =
     (await allowRequest(`review:ip:${ip}`, PER_IP_PER_DAY, 86400, { failClosed: true })) &&
-    (await allowRequest(`review:to:${req.email}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
-    (await allowRequest("review:all", GLOBAL_PER_DAY, 86400, { failClosed: true }));
+    (await allowRequest(`review:to:${mailboxKey(req.email)}`, PER_EMAIL_PER_DAY, 86400, { failClosed: true })) &&
+    (await allowRequest("review:all", settings.reviewDailyCap, 86400, { failClosed: true }));
   if (!allowed) {
     return NextResponse.json({ ok: false, error: "You have used today's free reviews. Start a project instead and we will reply personally." }, { status: 429 });
   }
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
 
   async function run(send: (event: Record<string, unknown>) => void) {
     send({ t: "stage", stage: "start" });
-    const [settings, aiOpen] = await Promise.all([getAdminSettings(), reviewEnabled() ? reviewHasBudget() : Promise.resolve(false)]);
+    const aiOpen = settings.reviewEnabled ? await reviewHasBudget(settings.reviewMonthlyBudgetUsd) : false;
 
     // Try the AI path. Any failure falls through to the human-reply path below, so a visitor is never left hanging.
     let review: Review | undefined;
@@ -131,7 +132,8 @@ export async function POST(request: Request) {
       } catch (error) {
         failure = error instanceof Error ? error.message : String(error);
         console.error("[review] generation failed:", failure);
-        await recordReviewUsage(0, false);
+        // A rejected answer was still paid for: record what it really cost.
+        await recordReviewUsage(error instanceof ReviewGenerationError ? error.costUsd : 0, false);
       }
     }
     send({ t: "stage", stage: "write" });

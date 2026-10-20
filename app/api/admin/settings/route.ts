@@ -11,6 +11,9 @@ const schema = z.object({
   notifyEmail: z.string().email(),
   dailyGenerationCap: z.number().int().min(0).max(20),
   monthlyBudgetUsd: z.number().min(0).max(500),
+  reviewEnabled: z.boolean(),
+  reviewDailyCap: z.number().int().min(0).max(500),
+  reviewMonthlyBudgetUsd: z.number().min(0).max(100),
 });
 
 export async function PUT(request: Request) {

@@ -14,7 +14,7 @@ const Field = ({ label, hint, children }: { label: string; hint?: string; childr
 const inputClass =
   "h-11 w-full rounded-xl border border-black/[0.12] bg-white px-3 text-sm focus-visible:border-purple focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple/15";
 
-const SettingsForm = ({ initial, spentUsd = 0 }: { initial: AdminSettings; spentUsd?: number }) => {
+const SettingsForm = ({ initial, spentUsd = 0, reviewSpentUsd = 0 }: { initial: AdminSettings; spentUsd?: number; reviewSpentUsd?: number }) => {
   const [values, setValues] = useState(initial);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -66,6 +66,46 @@ const SettingsForm = ({ initial, spentUsd = 0 }: { initial: AdminSettings; spent
           step={0.5}
           value={values.monthlyBudgetUsd}
           onChange={(e) => setValues({ ...values, monthlyBudgetUsd: Number(e.target.value) })}
+          className={inputClass}
+        />
+      </Field>
+
+      <h2 className="pt-4 font-display text-lg font-bold tracking-tight">Instant website review</h2>
+
+      <Field label="Instant review on" hint="Off means visitors are told a person will reply instead. The REVIEW_ENABLED=false setting in Vercel overrides this and always wins.">
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={values.reviewEnabled}
+            onChange={(e) => setValues({ ...values, reviewEnabled: e.target.checked })}
+            className="h-5 w-5 accent-purple"
+          />
+          Produce reviews automatically
+        </label>
+      </Field>
+
+      <Field label="Reviews per day, whole site" hint="Once this many are produced in a day, everyone else is asked to come back tomorrow. Each review costs well under a cent.">
+        <input
+          type="number"
+          min={0}
+          max={500}
+          value={values.reviewDailyCap}
+          onChange={(e) => setValues({ ...values, reviewDailyCap: Number(e.target.value) })}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field
+        label="Review monthly budget (USD)"
+        hint={`A hard ceiling on review spend this month. Spent so far: $${reviewSpentUsd.toFixed(2)}. At the ceiling, visitors get a personal reply instead of an instant review.`}
+      >
+        <input
+          type="number"
+          min={0}
+          max={100}
+          step={0.5}
+          value={values.reviewMonthlyBudgetUsd}
+          onChange={(e) => setValues({ ...values, reviewMonthlyBudgetUsd: Number(e.target.value) })}
           className={inputClass}
         />
       </Field>

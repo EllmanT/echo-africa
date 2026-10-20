@@ -22,6 +22,21 @@ export const reviewRequestSchema = z
 
 export type ReviewRequest = z.infer<typeof reviewRequestSchema>;
 
+/**
+ * The identity a mailbox limit is counted against: lower case, "+tag" removed, and for Gmail the dots removed,
+ * so me+1@gmail.com, m.e@gmail.com and me@googlemail.com all count as one person.
+ */
+export function mailboxKey(email: string): string {
+  const [rawLocal = "", rawDomain = ""] = email.trim().toLowerCase().split("@");
+  let local = rawLocal.split("+")[0];
+  let domain = rawDomain;
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    local = local.replace(/\./g, "");
+    domain = "gmail.com";
+  }
+  return `${local}@${domain}`;
+}
+
 /** "zimmotors.co.zw", "www.x.com/a" or a full URL all become a full https URL. Returns null if it cannot be one. */
 export function normalizeSiteUrl(raw: string): string | null {
   const trimmed = raw.trim();

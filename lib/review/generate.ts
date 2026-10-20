@@ -111,13 +111,29 @@ export function buildReviewPrompt(input: ReviewInput): string {
   return `Write the free review for this manual process the owner wants to automate. Give 3 automation wins: what AI or software could take over, and what it saves.\n\n<process_data>\n${safe}\n</process_data>`;
 }
 
+/** Nothing a visitor sends may make one review expensive: the prompt has a hard size ceiling (about 3k tokens). */
+export const REVIEW_MAX_PROMPT_CHARS = 12_000;
+
+/** A review that failed after the model was already paid for: carries the real cost so the budget stays honest. */
+export class ReviewGenerationError extends Error {
+  constructor(message: string, readonly costUsd: number) {
+    super(message);
+  }
+}
+
 /** One Haiku call. Returns the cleaned review and what it cost in US dollars. */
 export async function generateReview(input: ReviewInput): Promise<{ review: Review; costUsd: number }> {
+  const prompt = buildReviewPrompt(input);
+  if (prompt.length > REVIEW_MAX_PROMPT_CHARS) throw new ReviewGenerationError("Prompt is over the size ceiling", 0);
   const meter = new CostMeter();
-  const raw = await generateStructured<unknown>(buildReviewPrompt(input), "submit_review", SCHEMA, meter, {
-    system: REVIEW_SYSTEM_PROMPT,
-    maxTokens: REVIEW_MAX_OUTPUT_TOKENS,
-    timeoutMs: REVIEW_TIMEOUT_MS,
-  });
-  return { review: sanitizeReview(raw), costUsd: meter.usd };
+  try {
+    const raw = await generateStructured<unknown>(prompt, "submit_review", SCHEMA, meter, {
+      system: REVIEW_SYSTEM_PROMPT,
+      maxTokens: REVIEW_MAX_OUTPUT_TOKENS,
+      timeoutMs: REVIEW_TIMEOUT_MS,
+    });
+    return { review: sanitizeReview(raw), costUsd: meter.usd };
+  } catch (error) {
+    throw new ReviewGenerationError(error instanceof Error ? error.message : String(error), meter.usd);
+  }
 }
