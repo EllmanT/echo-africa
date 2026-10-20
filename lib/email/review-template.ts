@@ -4,7 +4,7 @@ import { button, escapeHtml, firstName, headline, hl, layout, para, signoff, wha
 import type { Mail } from "./send";
 
 const DISCLOSURE =
-  "This quick review was drafted by our AI assistant from what is public on your site. Reply to this email and I will follow up personally.";
+  "This quick review was put together by the Eka team from what is public on your site. Reply to this email and I will follow up personally.";
 
 /** The free review, sent to the visitor in the same centred, plain Hormozi style as the other client emails. */
 export function reviewEmail(opts: { name: string; email: string; mode: "site" | "process"; subject?: string; review: Review; leadId?: string }): Mail {
@@ -56,7 +56,7 @@ export function reviewEmail(opts: { name: string; email: string; mode: "site" | 
   return { to: opts.email, subject, html, text, replyTo: siteConfig.email };
 }
 
-/** Heads-up to the owner: who asked, what they asked for, and what the AI told them (or that a human reply is needed). */
+/** Heads-up to the owner: who asked, what they asked for, and what the review said (or that a human reply is needed). */
 export function reviewOwnerEmail(opts: {
   to: string;
   name: string;
@@ -65,12 +65,14 @@ export function reviewOwnerEmail(opts: {
   subject: string;
   target: string;
   review?: Review;
+  /** Why no review was produced, shown to the owner only. */
+  failure?: string;
   leadId?: string;
 }): Mail {
   const e = escapeHtml;
   const summary = opts.review
     ? `<p><strong>${e(opts.review.headline)}</strong></p><ol>${opts.review.wins.map((w) => `<li><strong>${e(w.title)}</strong>: ${e(w.body)}</li>`).join("")}</ol>`
-    : `<p><strong>No AI review was sent.</strong> Please reply to this person yourself.</p>`;
+    : `<p><strong>No AI review was sent.</strong> Please reply to this person yourself.${opts.failure ? `<br>Reason: ${e(opts.failure.slice(0, 300))}` : ""}</p>`;
   const html = `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111;">
 <h2 style="margin:0 0 12px;">${e(opts.subject)}</h2>
 <p><strong>${e(opts.name)}</strong> &lt;${e(opts.email)}&gt;<br>${opts.mode === "site" ? "Website" : "Process"}: ${e(opts.target)}</p>
@@ -80,7 +82,7 @@ ${opts.leadId ? `<p><a href="${siteConfig.url}/admin/leads">Open in admin</a></p
     opts.subject,
     `${opts.name} <${opts.email}>`,
     `${opts.mode === "site" ? "Website" : "Process"}: ${opts.target}`,
-    opts.review ? `${opts.review.headline}\n${opts.review.wins.map((w) => `- ${w.title}: ${w.body}`).join("\n")}` : "No AI review was sent. Reply to this person yourself.",
+    opts.review ? `${opts.review.headline}\n${opts.review.wins.map((w) => `- ${w.title}: ${w.body}`).join("\n")}` : `No AI review was sent. Reply to this person yourself.${opts.failure ? ` Reason: ${opts.failure.slice(0, 300)}` : ""}`,
   ].join("\n\n");
   return { to: opts.to, subject: opts.subject, html, text, replyTo: opts.email };
 }

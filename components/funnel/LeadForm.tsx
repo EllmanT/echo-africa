@@ -221,7 +221,7 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
     }
 
     // Final step: send everything.
-    const honeypot = (document.getElementById("company") as HTMLInputElement | null)?.value;
+    const honeypot = (document.getElementById("hp-ref") as HTMLInputElement | null)?.value;
     const values = form.getValues();
     setBusy(true);
     try {
@@ -544,10 +544,10 @@ const LeadForm = ({ pricing }: { pricing: PricingConfig }) => {
                   )}
                 </div>
 
-                {/* Honeypot: hidden from people, tempting to bots. */}
+                {/* Honeypot: hidden from people, tempting to bots. Named so browser autofill never fills it (a field called "company" gets autofilled, which silently dropped real leads). */}
                 <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-                  <label htmlFor="company">Company</label>
-                  <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+                  <label htmlFor="hp-ref">Leave this field empty</label>
+                  <input id="hp-ref" name="hp_ref" type="text" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" />
                 </div>
 
                 {error && (
