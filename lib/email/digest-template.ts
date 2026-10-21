@@ -1,7 +1,7 @@
 import type { Digest } from "@/lib/digest/generate";
 import { siteConfig } from "@/lib/seo/site";
 import { unsubscribeToken } from "@/lib/nurture/unsubscribe";
-import { escapeHtml, headline, hl, link, para, signoff, unsubscribeUrl } from "./templates";
+import { escapeHtml, headline, hl, para, signoff, unsubscribeUrl } from "./templates";
 import type { Mail } from "./send";
 
 const PURPLE = "#7C3AED";
@@ -40,7 +40,7 @@ export function digestEmail({ to, leadId, digest, slug }: DigestMailInput): Mail
 ${headline(escapeHtml(digest.hook))}
 ${points}
 ${para(hl(escapeHtml(digest.takeaway)), 26)}
-<p style="margin:0 0 26px;font-size:16px;">${link(url, `${escapeHtml(digest.cta)}`)}</p>
+<p style="margin:0 0 26px;font-size:15px;line-height:1.6;color:#6b6e7c;">The full article is here if you want more: <a href="${url}" style="color:${PURPLE};font-weight:600;text-decoration:underline;">read it here &rarr;</a><br>Or just reply to this email, I read every one.</p>
 ${signoff()}
 </td></tr>
 <tr><td align="center" style="padding:36px 0 0;font-size:12px;line-height:1.7;color:#a0a3b1;text-align:center;">
@@ -57,7 +57,8 @@ You get this because you shared your details with us. <a href="${unsub}" style="
     ``,
     digest.takeaway,
     ``,
-    `${digest.cta}: ${url}`,
+    `The full article is here if you want more: ${url}`,
+    `Or just reply to this email, I read every one.`,
     ``,
     `Tapiwa`,
     `Founder, Eka`,
