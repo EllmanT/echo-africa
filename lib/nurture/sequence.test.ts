@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickDueStep } from "./sequence";
+import { mailboxHistory, pickDueStep } from "./sequence";
 
 const STEPS = [
   { type: "a", afterHours: 1 },
@@ -26,5 +26,20 @@ describe("pickDueStep", () => {
 
   it("only ever returns one step, the earliest unsent one, even if several are due", () => {
     expect(pickDueStep(STEPS, [], 100)?.type).toBe("a");
+  });
+});
+
+describe("mailboxHistory", () => {
+  it("treats +tags, gmail dots and repeat records as one mailbox", () => {
+    const h = mailboxHistory([
+      { email: "me@gmail.com", emailsSent: [{ type: "a" }] },
+      { email: "m.e+ui@gmail.com", emailsSent: [{ type: "b" }] },
+    ]);
+    expect([...(h.sent.get("me@gmail.com") ?? [])].sort()).toEqual(["a", "b"]);
+  });
+
+  it("an opt-out on any record covers the whole mailbox", () => {
+    const h = mailboxHistory([{ email: "me@gmail.com" }, { email: "me+x@gmail.com", unsubscribed: true }]);
+    expect(h.optedOut.has("me@gmail.com")).toBe(true);
   });
 });
