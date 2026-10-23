@@ -9,6 +9,7 @@ export const TextGenerateEffect = ({
   as: Tag = "div",
   spectrumTail = 0,
   innerClassName = "leading-snug tracking-wide",
+  instant = false,
 }: {
   words: string;
   className?: string;
@@ -16,10 +17,13 @@ export const TextGenerateEffect = ({
   /** How many of the last words wear the slow multi-colour gradient (the Services palette). */
   spectrumTail?: number;
   innerClassName?: string;
+  /** Render every word fully visible from first paint, with no fade-in. */
+  instant?: boolean;
 }) => {
   const [scope, animate] = useAnimate();
   let wordsArray = words.split(" ");
   useEffect(() => {
+    if (instant) return;
     animate(
       "span",
       {
@@ -46,7 +50,7 @@ export const TextGenerateEffect = ({
                   : idx > 3
                     ? "text-purple"
                     : "dark:text-white text-black"
-              } opacity-0`}
+              } ${instant ? "" : "opacity-0"}`}
             >
               {word}{" "}
             </motion.span>

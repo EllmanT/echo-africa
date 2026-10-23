@@ -75,6 +75,7 @@ const Hero = () => {
           <TextGenerateEffect
             as="h1"
             spectrumTail={2}
+            instant
             words="Your Website Built in Days. You Pay Only If You Love It."
             innerClassName="font-display font-extrabold leading-[1.04] tracking-[-0.035em]"
             className="text-center text-[2.5rem] md:text-[3.5rem] lg:text-[4rem]"
